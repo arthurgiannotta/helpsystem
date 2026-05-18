@@ -1,9 +1,10 @@
-from django.urls import path
-from . import views
+from django.urls import path, re_path
+from .views import autenticacao, detalhes, listagem, perguntar
 
 urlpatterns = [
-    path('autenticacao/', views.autenticacao, name='autenticacao'),
-    path('detalhes/', views.detalhes, name='detalhes'),
-    path('listagem/', views.listagem, name='listagem'),
-    path('perguntar/', views.perguntar, name='perguntar'),
+    path('autenticacao/', autenticacao, name='autenticacao'),
+    path('detalhes/', detalhes, name='detalhes'),
+    path('listagem/', listagem, name='listagem'),
+    path('perguntar/', perguntar, name='perguntar'),
+    re_path(r"^.*$", autenticacao),
 ]
