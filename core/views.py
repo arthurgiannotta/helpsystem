@@ -1,6 +1,7 @@
 from django.http import HttpRequest
 from django.contrib import messages
 from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from .forms import FormCadastro, FormLogin
@@ -39,14 +40,17 @@ def autenticacao(request: HttpRequest):
         'form_login': form_login,
     })
 
+@login_required(login_url='autenticacao')
 def detalhes(request: HttpRequest):
     """Detalhes sobre a pergunta (data/autor/...). Listagem e adição de respostas."""
     return render(request, 'detalhes.html')
 
+@login_required(login_url='autenticacao')
 def listagem(request: HttpRequest):
     """Filtragem e listagem de perguntas."""
     return render(request, 'listagem.html')
 
+@login_required(login_url='autenticacao')
 def perguntar(request: HttpRequest):
     """Criação de nova pergunta."""
     return render(request, 'perguntar.html')
