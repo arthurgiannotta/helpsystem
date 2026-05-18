@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from .models import Perfil, Pergunta
 
 class FormCadastro(forms.ModelForm):
+    departamento = forms.ChoiceField(choices=Perfil.DEPARTAMENTO_CHOICES)
     password = forms.CharField(label='Senha', widget=forms.PasswordInput(attrs={'placeholder': 'Senha'}))
     password_confirm = forms.CharField(label='Confirmar Senha', widget=forms.PasswordInput(attrs={'placeholder': 'Confirmar Senha'}))
  
