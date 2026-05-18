@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 
+from .models import Pergunta
+
 class FormCadastro(forms.ModelForm):
     password = forms.CharField(label='Senha', widget=forms.PasswordInput(attrs={'placeholder': 'Senha'}))
     password_confirm = forms.CharField(label='Confirmar Senha', widget=forms.PasswordInput(attrs={'placeholder': 'Confirmar Senha'}))
@@ -32,3 +34,13 @@ class FormCadastro(forms.ModelForm):
 class FormLogin(AuthenticationForm):
     username = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Nome de usuário'}), label='Usuário')
     password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Senha'}), label='Senha')
+
+class FormPergunta(forms.ModelForm):
+    class Meta:
+        fields = ['titulo', 'pergunta']
+        labels = { 'pergunta': 'Pergunta', 'titulo': 'Título' }
+        model = Pergunta
+        widgets = {
+            'pergunta': forms.Textarea(attrs={ 'placeholder': 'Descreva o problema, o que aconteceu, o que já tentou...' }),
+            'titulo': forms.TextInput(attrs={'placeholder': 'Título da pergunta'}),
+        }
