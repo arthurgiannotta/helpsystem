@@ -9,8 +9,8 @@ class FormCadastro(forms.ModelForm):
     password_confirm = forms.CharField(label='Confirmar Senha', widget=forms.PasswordInput(attrs={'placeholder': 'Confirmar Senha'}))
  
     class Meta:
-        model = User
         fields = ['email', 'first_name', 'username']
+        model = User
         widgets = {
             'email': forms.EmailInput(attrs={'placeholder': 'E-mail'}),
             'first_name': forms.TextInput(attrs={'placeholder': 'Apelido'}),

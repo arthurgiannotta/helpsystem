@@ -54,6 +54,7 @@ def listagem(request: HttpRequest):
 def perguntar(request: HttpRequest):
     """Criação de nova pergunta."""
 
+    # Salva a pergunta no banco de dados
     if request.method == 'POST':
         form_pergunta = FormPergunta(data=request.POST)
         if form_pergunta.is_valid():
@@ -63,5 +64,6 @@ def perguntar(request: HttpRequest):
             messages.success(request, 'Pergunta criada com sucesso!')
             return redirect('detalhes', id=pergunta.pk)
 
+    # Cria formulário
     form_pergunta = FormPergunta()
     return render(request, 'perguntar.html', { 'form_pergunta': form_pergunta })
