@@ -1,0 +1,34 @@
+from django import forms
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.models import User
+
+class FormCadastro(forms.ModelForm):
+    password = forms.CharField(label='Senha', widget=forms.PasswordInput(attrs={'placeholder': 'Senha'}))
+    password_confirm = forms.CharField(label='Confirmar Senha', widget=forms.PasswordInput(attrs={'placeholder': 'Confirmar Senha'}))
+ 
+    class Meta:
+        model = User
+        fields = ['email', 'first_name', 'username']
+        widgets = {
+            'email': forms.EmailInput(attrs={'placeholder': 'E-mail'}),
+            'first_name': forms.TextInput(attrs={'placeholder': 'Apelido'}),
+            'username': forms.TextInput(attrs={'placeholder': 'Nome de usuário'}),
+        }
+ 
+    def clean(self):
+        cleaned_data = super().clean()
+        p1 = cleaned_data.get('password')
+        p2 = cleaned_data.get('password_confirm')
+        if p1 and p2 and p1 != p2:
+            self.add_error('password_confirm', 'Senhas não coincidem.')
+        return cleaned_data
+ 
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data['password'])
+        if commit: user.save()
+        return user
+
+class FormLogin(AuthenticationForm):
+    username = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Nome de usuário'}), label='Usuário')
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Senha'}), label='Senha')
