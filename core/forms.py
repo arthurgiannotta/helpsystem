@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 
-from .models import Pergunta
+from .models import Perfil, Pergunta
 
 class FormCadastro(forms.ModelForm):
     password = forms.CharField(label='Senha', widget=forms.PasswordInput(attrs={'placeholder': 'Senha'}))
@@ -28,7 +28,10 @@ class FormCadastro(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data['password'])
-        if commit: user.save()
+        if commit:
+            user.save()
+            Perfil.objects.create(usuario=user, departamento=self.cleaned_data['departamento'])
+
         return user
 
 class FormLogin(AuthenticationForm):
