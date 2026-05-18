@@ -3,7 +3,7 @@ from .views import autenticacao, detalhes, listagem, perguntar
 
 urlpatterns = [
     path('autenticacao/', autenticacao, name='autenticacao'),
-    path('detalhes/', detalhes, name='detalhes'),
+    path('detalhes/<int:id>/', detalhes, name='detalhes'),
     path('listagem/', listagem, name='listagem'),
     path('perguntar/', perguntar, name='perguntar'),
     re_path(r"^.*$", autenticacao),

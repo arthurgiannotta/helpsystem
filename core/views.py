@@ -4,7 +4,7 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
-from .forms import FormCadastro, FormLogin
+from .forms import FormCadastro, FormLogin, FormPergunta
 
 def autenticacao(request: HttpRequest):
     """Página de login e cadastro."""
@@ -53,4 +53,15 @@ def listagem(request: HttpRequest):
 @login_required(login_url='autenticacao')
 def perguntar(request: HttpRequest):
     """Criação de nova pergunta."""
-    return render(request, 'perguntar.html')
+
+    if request.method == 'POST':
+        form_pergunta = FormPergunta(data=request.POST)
+        if form_pergunta.is_valid():
+            pergunta = form_pergunta.save(commit=False)
+            pergunta.autor = request.user
+            pergunta.save()
+            messages.success(request, 'Pergunta criada com sucesso!')
+            return redirect('detalhes', id=pergunta.pk)
+
+    form_pergunta = FormPergunta()
+    return render(request, 'perguntar.html', { 'form_pergunta': form_pergunta })
