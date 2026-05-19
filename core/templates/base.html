@@ -4,10 +4,115 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <style>
+        /* ── Django Messages – Toast style ──────────────────────── */
+        .messages {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 999;
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        max-width: 320px;
+        width: 100%;
+        }
+
+        .messages li {
+        padding: 13px 16px;
+        border-radius: 10px;
+        font-size: .875rem;
+        font-weight: 400;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 8px 24px rgba(46, 55, 96, .18);
+        animation: toast-in .3s cubic-bezier(.22, 1, .36, 1) both;
+        }
+
+        @keyframes toast-in {
+        from { opacity: 0; transform: translateX(20px); }
+        to   { opacity: 1; transform: translateX(0); }
+        }
+
+        .messages li::before {
+        content: '';
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        }
+
+        .messages li.success {
+        background: #eef6e6;
+        color: #3b6011;
+        border: 1px solid #c0dd97;
+        }
+        .messages li.success::before { background: #639922; }
+
+        .messages li.error {
+        background: #fdf0f0;
+        color: #7a1f1f;
+        border: 1px solid #f09595;
+        }
+        .messages li.error::before { background: #e24b4a; }
+
+        .messages li.warning {
+        background: #fef6e8;
+        color: #6b3a06;
+        border: 1px solid #fac775;
+        }
+        .messages li.warning::before { background: #ba7517; }
+
+        .messages li.info {
+        background: #edf4fb;
+        color: #0c447c;
+        border: 1px solid #85b7eb;
+        }
+        .messages li.info::before { background: #378add; }
+
+        .messages li:not([class]) {
+        background: #eef0f7;
+        color: #2e3760;
+        border: 1px solid #c0c5df;
+        }
+        .messages li:not([class])::before { background: #7f8ac2; }
+
+        .messages li {
+        animation: toast-in-out 4s cubic-bezier(.22, 1, .36, 1) forwards;
+        }
+
+        @keyframes toast-in-out {
+        0%   { opacity: 0; transform: translateY(-10px); }
+        10%  { opacity: 1; transform: translateY(0); }
+        80%  { opacity: 1; transform: translateY(0); }
+        100% { opacity: 0; transform: translateY(-10px); }
+        }
+
+        @media (max-width: 480px) {
+        .messages {
+            top: 12px;
+            right: 12px;
+            left: 12px;
+            max-width: unset;
+        }
+        }
+    </style>
     {% block css %}{% endblock %}
 </head>
 
 <body>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}
+        </ul>
+    {% endif %}
+
     <div class="container">
         {% block content %}{% endblock %}
     </div>

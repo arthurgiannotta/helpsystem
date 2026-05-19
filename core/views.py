@@ -24,13 +24,13 @@ def autenticacao(request: HttpRequest):
                     user = form_cadastro.save()
                     login(request, user)
                     messages.success(request, 'Cadastro realizado com sucesso!')
-                    return redirect('perguntas')
+                    return redirect('listagem')
             case 'login':
                 form_login = FormLogin(data=request.POST)
                 if form_login.is_valid():
                     user = form_login.get_user()
                     login(request, user)
-                    return redirect('perguntas')
+                    return redirect('listagem')
                 else:
                     messages.error(request, 'Usuário ou senha inválidos.')
 

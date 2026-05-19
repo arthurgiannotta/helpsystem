@@ -1,10 +1,314 @@
 {% extends 'base.html' %}
-{% block title %}Autenticação – Help System{% endblock %}
+{% block title %}Autenticação – Colmeia{% endblock %}
 
 {% block css %}
 <style>
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
+    /* ============================================================
+   Colmeia – Autenticação
+   Paleta: Twilight Indigo / Glaucous / Ochre / Light Caramel
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=DM+Sans:wght@300;400;500&display=swap');
+
+/* ── Tokens ─────────────────────────────────────────────── */
+:root {
+  --light-caramel : #ffbb7b;
+  --ochre         : #c6782f;
+  --glaucous      : #7f8ac2;
+  --indigo        : #2e3760;
+  --indigo-deep   : #1e2540;
+  --muted-olive   : #a9bf75;
+  --fern          : #697e3a;
+
+  --surface       : #ffffff;
+  --surface-soft  : #f5f6fa;
+  --text-primary  : #1a1e30;
+  --text-muted    : #6b7280;
+  --border        : #dde0ec;
+
+  --radius-card   : 16px;
+  --radius-input  : 8px;
+  --shadow-card   : 0 24px 64px rgba(46, 55, 96, 0.14),
+                    0  4px 16px rgba(46, 55, 96, 0.08);
+  --transition    : 200ms cubic-bezier(.4, 0, .2, 1);
+}
+
+/* ── Reset & Base ────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  background-color: var(--indigo-deep);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 20% -10%, rgba(127,138,194,.25) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 110%,  rgba(198,120, 47,.18) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 50%  50%,  rgba(46, 55, 96,.6)   0%, transparent 80%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* ── Geometric accent strip (left edge) ─────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 4px;
+  height: 100vh;
+  background: linear-gradient(180deg, var(--light-caramel), var(--ochre), var(--glaucous));
+  z-index: 0;
+}
+
+/* ── Layout container ────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: 440px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Brand header ────────────────────────────────────────── */
+.container::before {
+  content: 'Colmeia';
+  display: block;
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--ochre);
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.container::after {
+  content: 'Central de suporte corporativo';
+  display: block;
+  font-size: .8125rem;
+  font-weight: 300;
+  color: var(--glaucous);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 32px;
+  margin-top: 12px;
+}
+
+/* ── Card ────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  animation: card-rise .5s cubic-bezier(.22,1,.36,1) both;
+}
+
+@keyframes card-rise {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* ── Tab bar ─────────────────────────────────────────────── */
+.tab-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--surface-soft);
+  border-bottom: 1px solid var(--border);
+}
+
+.tab-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 16px 0;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  position: relative;
+  transition: color var(--transition);
+  letter-spacing: .02em;
+}
+
+.tab-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 80px;
+  height: 2px;
+  background: var(--ochre);
+  border-radius: 2px 2px 0 0;
+  transition: transform var(--transition);
+}
+
+.tab-btn.active {
+  color: var(--indigo);
+  background: var(--surface);
+}
+
+.tab-btn.active::after {
+  transform: translateX(-50%) scaleX(1);
+}
+
+.tab-btn:hover:not(.active) {
+  color: var(--indigo);
+}
+
+/* ── Tab panels ──────────────────────────────────────────── */
+.tab-panel {
+  display: none;
+  padding: 24px 40px 24px;
+  animation: fade-in .25s ease both;
+}
+
+.tab-panel.active { display: block; }
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+/* ── Form groups ─────────────────────────────────────────── */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  font-size: .75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+/* ── Inputs (Django renders them – we target generic elements) */
+.form-group input,
+.form-group select,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-input);
+  font-family: 'DM Sans', sans-serif;
+  font-size: .9375rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  background: var(--surface);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+select:focus {
+  border-color: var(--glaucous);
+  box-shadow: 0 0 0 3px rgba(127, 138, 194, .18);
+}
+
+/* Select arrow */
+.form-group select,
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237f8ac2' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+/* ── Validation errors ───────────────────────────────────── */
+.errorlist {
+  list-style: none;
+  margin-top: 4px;
+}
+
+.errorlist li,
+.errorlist {
+  font-size: .75rem;
+  color: #c0392b;
+  font-weight: 400;
+}
+
+/* ── Primary button ──────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 13px 24px;
+  border: none;
+  border-radius: var(--radius-input);
+  font-family: 'DM Sans', sans-serif;
+  font-size: .9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: filter var(--transition), transform var(--transition),
+              box-shadow var(--transition);
+}
+
+.btn-primary {
+  width: 100%;
+  margin-top: 8px;
+  background: linear-gradient(135deg, var(--indigo) 0%, #3d4d80 100%);
+  color: #fff;
+  letter-spacing: .02em;
+  box-shadow: 0 4px 18px rgba(46, 55, 96, .35);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shimmer effect on hover */
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,255,255,.12) 50%,
+    transparent 100%);
+  transform: translateX(-100%);
+  transition: transform .45s ease;
+}
+
+.btn-primary:hover::before {
+  transform: translateX(100%);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 6px 24px rgba(46, 55, 96, .45);
+}
+
+.btn-primary:active {
+  transform: scale(.98);
+  filter: brightness(.97);
+}
+
+/* ── Footer note (optional) ──────────────────────────────── */
+.tab-panel p.note {
+  margin-top: 20px;
+  font-size: .75rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .tab-panel { padding: 28px 24px 32px; }
+
+  .container::before { font-size: 1.625rem; }
+}
 </style>
 {% endblock %}
 
@@ -59,11 +363,11 @@
             {{ form_cadastro.password.errors }}
         </div>
         <div class="form-group">
-            <label>Confirmar Senha</label>
+            <label>Confirmar senha</label>
             {{ form_cadastro.password_confirm }}
             {{ form_cadastro.password_confirm.errors }}
         </div>
-        <button type="submit" class="btn btn-primary">Criar conta</button>
+        <button type="submit" class="btn btn-primary">Criar Conta</button>
     </form>
   </div>
 </div>
