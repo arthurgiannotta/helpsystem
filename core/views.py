@@ -3,9 +3,9 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import FormCadastro, FormLogin, FormPergunta
+from .forms import FormCadastro, FormLogin, FormPergunta, FormResposta
 from .models import Pergunta
 
 def autenticacao(request: HttpRequest):
@@ -43,9 +43,34 @@ def autenticacao(request: HttpRequest):
     })
 
 @login_required(login_url='autenticacao')
-def detalhes(request: HttpRequest):
+def detalhes(request: HttpRequest, id):
     """Detalhes sobre a pergunta (data/autor/...). Listagem e adição de respostas."""
-    return render(request, 'detalhes.html')
+
+    # Obtém dados da pergunta
+    pergunta = get_object_or_404(Pergunta.objects.select_related('autor', 'autor__perfil'), pk=id)
+    respostas = pergunta.respostas.select_related('autor', 'autor__perfil')
+
+    # Cria formulário de resposta
+    form_resposta = FormResposta()
+    if request.method == 'POST':
+        form_resposta = FormResposta(request.POST)
+        if form_resposta.is_valid():
+            resposta = form_resposta.save(commit=False)
+            resposta.autor = request.user
+            resposta.pergunta = pergunta
+            resposta.save()
+            if pergunta.status == 'aberta':
+                pergunta.status = 'respondida'
+                pergunta.save()
+            messages.success(request, 'Resposta enviada!')
+            return redirect('detalhes', id=id)
+
+    # Renderiza página
+    return render(request, 'detalhes.html', {
+        'pergunta': pergunta,
+        'respostas': respostas,
+        'form_resposta': form_resposta,
+    })
 
 @login_required(login_url='autenticacao')
 def listagem(request: HttpRequest):
