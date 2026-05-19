@@ -1,8 +1,20 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+     <meta charset="UTF-8" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>Colmeia</title>
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="{% static 'image/favicon.png' %}"
+    >
 
     <style>
         /* ── Django Messages – Toast style ──────────────────────── */
@@ -107,23 +119,6 @@
 </head>
 
 <body>
-    {% if user.is_authenticated %}
-        <nav>
-            <div class="nav-logo">Colmeia</div>
-            <div class="nav-links">
-                <a href="{% url 'listagem' %}">Perguntas</a>
-                <a href="{% url 'perguntar' %}">Nova Pergunta</a>
-            </div>
-                <div style="display:flex;align-items:center;gap:1rem">
-                <span class="nav-user">
-                    <strong>{{ user.first_name }}</strong>
-                    {% if user.perfil %}&nbsp;·&nbsp;{{ user.perfil.departamento }}{% endif %}
-                </span>
-                <a href="{% url 'sair' %}" class="btn btn-outline btn-sm">Sair</a>
-            </div>
-        </nav>
-    {% endif %}
-
     {% if messages %}
         <ul class="messages">
             {% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}
