@@ -17,7 +17,7 @@ class Perfil(models.Model):
 
 class Pergunta(models.Model):
     STATUS_CHOICES = [('aberta', 'Aberta'), ('fechada', 'Fechada'), ('respondida', 'Respondida')]
-    autor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='solicitacoes')
+    autor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='perguntas')
     criado_em = models.DateTimeField(auto_now_add=True)
     pergunta = models.TextField(validators=[MinLengthValidator(10)])
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='aberta')
@@ -28,3 +28,15 @@ class Pergunta(models.Model):
 
     def __str__(self):
         return self.titulo
+
+class Resposta(models.Model):
+    autor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='respostas')
+    criado_em = models.DateTimeField(auto_now_add=True)
+    pergunta = models.ForeignKey(Pergunta, on_delete=models.CASCADE, related_name='respostas')
+    resposta = models.TextField(validators=[MinLengthValidator(10)])
+
+    class Meta:
+        ordering = ['criado_em']
+
+    def __str__(self):
+        return f"Resposta de {self.autor.first_name} para '{self.pergunta.titulo}'"
