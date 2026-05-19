@@ -67,6 +67,7 @@ def listagem(request: HttpRequest):
         'busca': search,
         'perguntas': perguntas,
         'status_filtro': status,
+        'status_opcoes': Pergunta.STATUS_CHOICES,
     })
 
 @login_required(login_url='autenticacao')

@@ -1,11 +1,52 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
-</head>
-<body>
-Listagem
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}Perguntas – Colmeia{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Fórum</h1>
+    <a href="{% url 'perguntar' %}" class="btn btn-primary">+ Nova Pergunta</a>
+</div>
+
+<form method="get" class="filters">
+    <input type="text" name="busca" value="{{ busca }}" placeholder="Título ou Colaborador" />
+    <select name="status">
+        <option value="">Qualquer Situação</option>
+        {% for value, label in status_opcoes %}
+            <option value="{{ value }}"
+                {% if status_filtro == value %}selected{% endif %}>
+                {{ label }}
+            </option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-outline">Filtrar</button>
+    {% if busca or status_filtro %}
+        <a href="{% url 'perguntas' %}" class="btn btn-outline">Limpar</a>
+    {% endif %}
+</form>
+
+{% if perguntas %}
+    {% for pergunta in perguntas %}
+        <a href="{% url 'detalhes' pergunta.pk %}" class="question-card">
+        <div class="question-card-header">
+            <span class="question-title">{{ pergunta.titulo }}</span>
+            <span class="badge badge-{{ pergunta.status }}">{{ pergunta.get_status_display }}</span>
+        </div>
+        <div class="question-meta">
+            <span class="autor">
+            por <strong>{{ pergunta.autor.first_name }}</strong>
+            {% if pergunta.autor.perfil %}&nbsp;·&nbsp;{{ pergunta.autor.perfil.departamento }}{% endif %}
+            </span>
+            <span>{{ pergunta.criado_em|date:"d/m/Y H:i" }}</span>
+        </div>
+        </a>
+    {% endfor %}
+{% else %}
+    <div class="empty">
+        <p>Nenhuma pergunta encontrada.</p>
+        <a href="{% url 'perguntar' %}" class="btn btn-primary">Seja o primeiro a perguntar.</a>
+    </div>
+    {% endif %}
+{% endblock %}
