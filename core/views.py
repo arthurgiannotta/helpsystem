@@ -2,9 +2,11 @@ from django.http import HttpRequest
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.shortcuts import redirect, render
 
 from .forms import FormCadastro, FormLogin, FormPergunta
+from .models import Pergunta
 
 def autenticacao(request: HttpRequest):
     """Página de login e cadastro."""
@@ -48,7 +50,24 @@ def detalhes(request: HttpRequest):
 @login_required(login_url='autenticacao')
 def listagem(request: HttpRequest):
     """Filtragem e listagem de perguntas."""
-    return render(request, 'listagem.html')
+
+    # Busca perguntas (junto ao autor para otimização da página)
+    perguntas = Pergunta.objects.select_related('autor', 'autor__perfil').all()
+
+    # Filtra perguntas
+    search = request.GET.get('busca', '').strip()
+    status = request.GET.get('status', '').strip()
+    if search:
+        perguntas = perguntas.filter(Q(titulo__icontains=search) | Q(autor__first_name__icontains=search))
+    if status:
+        perguntas = perguntas.filter(status=status)
+
+    # Renderiza página com as perguntas filtradas
+    return render(request, 'listagem.html', {
+        'busca': search,
+        'perguntas': perguntas,
+        'status_filtro': status,
+    })
 
 @login_required(login_url='autenticacao')
 def perguntar(request: HttpRequest):
