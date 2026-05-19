@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 from .models import Perfil, Pergunta
 
@@ -22,8 +24,14 @@ class FormCadastro(forms.ModelForm):
         cleaned_data = super().clean()
         p1 = cleaned_data.get('password')
         p2 = cleaned_data.get('password_confirm')
-        if p1 and p2 and p1 != p2:
-            self.add_error('password_confirm', 'Senhas não coincidem.')
+        if p1 and p2:
+            if p1 == p2:
+                try:
+                    validate_password(p1)
+                except ValidationError as error:
+                    self.add_error('password', error)
+            else:
+                self.add_error('password_confirm', 'Senhas não coincidem.')
         return cleaned_data
  
     def save(self, commit=True):
