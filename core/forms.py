@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
-from .models import Perfil, Pergunta
+from .models import Perfil, Pergunta, Resposta
 
 class FormCadastro(forms.ModelForm):
     departamento = forms.ChoiceField(choices=Perfil.DEPARTAMENTO_CHOICES)
@@ -56,3 +56,10 @@ class FormPergunta(forms.ModelForm):
             'pergunta': forms.Textarea(attrs={ 'placeholder': 'Descreva o problema, o que aconteceu, o que já tentou...' }),
             'titulo': forms.TextInput(attrs={'placeholder': 'Título da pergunta'}),
         }
+
+class FormResposta(forms.ModelForm):
+    class Meta:
+        model = Resposta
+        fields = ['resposta']
+        widgets = { 'resposta': forms.Textarea(attrs={'placeholder': 'Escreva sua resposta...'}) }
+        labels = { 'resposta': 'Resposta' }
