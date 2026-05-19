@@ -1,6 +1,6 @@
 from django.http import HttpRequest
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import redirect, render
@@ -10,12 +10,14 @@ from .models import Pergunta
 
 def autenticacao(request: HttpRequest):
     """Página de login e cadastro."""
-    
+
     # Redireciona usuário já logado
     if request.user.is_authenticated:
         return redirect('listagem')
 
     # Responde aos endpoints
+    form_login = FormLogin()
+    form_cadastro = FormCadastro()
     if request.method == 'POST':
         match request.POST.get('acao'):
             case 'cadastro':
@@ -34,9 +36,7 @@ def autenticacao(request: HttpRequest):
                 else:
                     messages.error(request, 'Usuário ou senha inválidos.')
 
-    # Cria formulários
-    form_login = FormLogin()
-    form_cadastro = FormCadastro()
+    # Renderiza página
     return render(request, 'autenticacao.html', {
         'form_cadastro': form_cadastro,
         'form_login': form_login,
@@ -75,6 +75,7 @@ def perguntar(request: HttpRequest):
     """Criação de nova pergunta."""
 
     # Salva a pergunta no banco de dados
+    form_pergunta = FormPergunta()
     if request.method == 'POST':
         form_pergunta = FormPergunta(data=request.POST)
         if form_pergunta.is_valid():
@@ -84,6 +85,10 @@ def perguntar(request: HttpRequest):
             messages.success(request, 'Pergunta criada com sucesso!')
             return redirect('detalhes', id=pergunta.pk)
 
-    # Cria formulário
-    form_pergunta = FormPergunta()
+    # Renderiza página
     return render(request, 'perguntar.html', { 'form_pergunta': form_pergunta })
+
+@login_required(login_url='autenticacao')
+def sair(request: HttpRequest):
+    logout(request)
+    return redirect('autenticacao')
