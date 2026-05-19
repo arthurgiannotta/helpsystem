@@ -1,11 +1,57 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
-</head>
-<body>
-Detalhes
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}{{ pergunta.titulo }} – Colmeia{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+<div class="question-box">
+    <div class="question-box-header">
+        <h1>{{ pergunta.titulo }}</h1>
+        <span class="badge badge-{{ pergunta.status }}">{{ pergunta.get_status_display }}</span>
+        </div>
+        <div class="question-body">{{ pergunta.pergunta }}</div>
+        <div class="question-meta">
+        <span>por <strong>{{ pergunta.autor.first_name }}</strong>
+        {% if pergunta.autor.perfil %}&nbsp;·&nbsp;{{ pergunta.autor.perfil.departamento|upper }}{% endif %}
+        </span>
+        <span>{{ pergunta.criado_em|date:"d/m/Y \à\s H:i" }}</span>
+    </div>
+</div>
+
+
+
+<div class="section-title">
+  Respostas <span>{{ respostas.count }}</span>
+</div>
+
+{% if respostas %}
+    {% for resposta in respostas %}
+        <div class="resposta-item">
+            <div class="resposta-avatar">{{ resposta.autor.first_name|first }}</div>
+            <div class="resposta-bubble">
+                <div class="resposta-meta">
+                    <strong>{{ resposta.autor.first_name }}</strong>
+                    {% if resposta.autor.perfil %}&nbsp;·&nbsp;{{ resposta.autor.perfil.departamento|upper }}{% endif %}
+                    &nbsp;·&nbsp; {{ r.criado_em|date:"d/m/Y H:i" }}
+                </div>
+                <div class="resposta-body">{{ resposta.resposta }}</div>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="no-answers">Ainda não há respostas. Seja o primeiro a responder!</div>
+{% endif %}
+
+<div class="add-resposta">
+    <h2>Adicionar Resposta</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form_resposta.resposta }}
+            {{ form_resposta.resposta.errors }}
+        </div>
+        <button type="submit" class="btn btn-primary">Enviar Resposta</button>
+    </form>
+</div>
+{% endblock %}
