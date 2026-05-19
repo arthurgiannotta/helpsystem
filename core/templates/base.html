@@ -19,6 +19,7 @@
     <style>
         /* ── Django Messages – Toast style ──────────────────────── */
         .container {
+        padding-top: 32px;
         width: 100%;
         }
 
@@ -118,6 +119,171 @@
             max-width: unset;
         }
         }
+        /* ============================================================
+   Colmeia – Navbar (Base Layout)
+   Matches authentication + pergunta design system
+   ============================================================ */
+
+        /* ── Navbar container ────────────────────────────────────── */
+        nav {
+        width: 100%;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+
+        padding: 14px 28px;
+
+        background: rgba(30, 37, 64, 0.85); /* indigo-deep glass */
+        backdrop-filter: blur(10px);
+
+        border-bottom: 1px solid rgba(221, 224, 236, 0.12);
+
+        position: sticky;
+        top: 0;
+        left: 0;
+        z-index: 100;
+        }
+
+        /* ── Logo ───────────────────────────────────────────────── */
+        .nav-logo {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+
+        color: #ffbb7b; /* light caramel accent */
+        letter-spacing: 0.06em;
+
+        user-select: none;
+        }
+
+        /* ── Links container ────────────────────────────────────── */
+        .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        }
+
+        /* ── Links ──────────────────────────────────────────────── */
+        .nav-links a {
+        position: relative;
+
+        text-decoration: none;
+
+        font-family: 'DM Sans', sans-serif;
+        font-size: .92rem;
+        font-weight: 500;
+
+        color: #dde0ec;
+
+        padding: 6px 4px;
+
+        transition: color 200ms ease, transform 200ms ease;
+        }
+
+        /* underline animation */
+        .nav-links a::after {
+        content: '';
+
+        position: absolute;
+        left: 0;
+        bottom: -4px;
+
+        width: 100%;
+        height: 2px;
+
+        background: linear-gradient(
+            90deg,
+            #ffbb7b,
+            #c6782f,
+            #7f8ac2
+        );
+
+        transform: scaleX(0);
+        transform-origin: left;
+
+        transition: transform 200ms ease;
+        }
+
+        .nav-links a:hover {
+        color: #ffffff;
+        transform: translateY(-1px);
+        }
+
+        .nav-links a:hover::after {
+        transform: scaleX(1);
+        }
+
+        /* ── User info ──────────────────────────────────────────── */
+        .nav-user {
+        font-family: 'DM Sans', sans-serif;
+        font-size: .85rem;
+
+        color: #a9bf75; /* muted olive accent */
+
+        background: rgba(255, 255, 255, 0.06);
+
+        padding: 6px 10px;
+
+        border-radius: 999px;
+
+        border: 1px solid rgba(221, 224, 236, 0.12);
+
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        }
+
+        .nav-user strong {
+        color: #ffffff;
+        font-weight: 600;
+        }
+
+        /* ── Buttons override (nav context) ─────────────────────── */
+        nav .btn {
+        padding: 8px 14px;
+        font-size: .85rem;
+        border-radius: 10px;
+        }
+
+        /* small outline button consistency */
+        .btn-sm {
+        padding: 8px 14px;
+        font-size: .82rem;
+        }
+
+        /* ensure logout stands out slightly */
+        nav .btn-outline {
+        border: 1px solid rgba(221, 224, 236, 0.25);
+        background: transparent;
+        color: #dde0ec;
+        }
+
+        nav .btn-outline:hover {
+        border-color: #7f8ac2;
+        color: #ffffff;
+        background: rgba(127, 138, 194, 0.12);
+        }
+
+        /* ── Responsive ─────────────────────────────────────────── */
+        @media (max-width: 768px) {
+        nav {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .nav-links {
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .nav-user {
+            width: 100%;
+            justify-content: center;
+        }
+        }
     </style>
     {% block css %}{% endblock %}
 </head>
@@ -133,7 +299,7 @@
                 <div style="display:flex;align-items:center;gap:1rem">
                 <span class="nav-user">
                     <strong>{{ user.first_name }}</strong>
-                    {% if user.perfil %}&nbsp;·&nbsp;{{ user.perfil.departamento }}{% endif %}
+                    {% if user.perfil %}&nbsp;·&nbsp;{{ user.perfil.departamento|upper }}{% endif %}
                 </span>
                 <a href="{% url 'sair' %}" class="btn btn-outline btn-sm">Sair</a>
             </div>

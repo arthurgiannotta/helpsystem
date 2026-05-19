@@ -2,6 +2,301 @@
 {% block title %}Perguntas – Colmeia{% endblock %}
 
 {% block css %}
+<style>
+/* ============================================================
+   Help System – Fórum / Perguntas
+   Paleta: Twilight Indigo / Glaucous / Ochre / Light Caramel
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=DM+Sans:wght@300;400;500&display=swap');
+
+/* ── Tokens ─────────────────────────────────────────────── */
+:root {
+  --light-caramel : #ffbb7b;
+  --ochre         : #c6782f;
+  --glaucous      : #7f8ac2;
+  --indigo        : #2e3760;
+  --indigo-deep   : #1e2540;
+  --muted-olive   : #a9bf75;
+  --fern          : #697e3a;
+
+  --surface       : #ffffff;
+  --surface-soft  : #f5f6fa;
+  --text-primary  : #1a1e30;
+  --text-muted    : #6b7280;
+  --border        : #dde0ec;
+
+  --radius-card   : 12px;
+  --radius-input  : 8px;
+  --transition    : 200ms cubic-bezier(.4, 0, .2, 1);
+}
+
+/* ── Reset & Base ────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  background-color: var(--surface-soft);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+/* ── Page container ──────────────────────────────────────── */
+.container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+}
+
+/* ── Page header ─────────────────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.page-header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--indigo);
+  letter-spacing: -0.02em;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.page-header h1::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 36px; height: 3px;
+  background: linear-gradient(90deg, var(--ochre), var(--light-caramel));
+  border-radius: 2px;
+}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: var(--radius-input);
+  font-family: 'DM Sans', sans-serif;
+  font-size: .875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  transition: filter var(--transition), transform var(--transition),
+              box-shadow var(--transition);
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--indigo) 0%, #3d4d80 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(46, 55, 96, .28);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 6px 20px rgba(46, 55, 96, .38);
+}
+
+.btn-primary:active { transform: scale(.98); }
+
+.btn-outline {
+  background: var(--surface);
+  color: var(--indigo);
+  border: 1.5px solid var(--border);
+}
+
+.btn-outline:hover {
+  border-color: var(--glaucous);
+  color: var(--indigo);
+  background: #f0f2fa;
+}
+
+.btn-outline:active { transform: scale(.98); }
+
+/* ── Filters form ────────────────────────────────────────── */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 16px 20px;
+  margin-bottom: 28px;
+}
+
+.filters input[type="text"],
+.filters select {
+  flex: 1;
+  min-width: 160px;
+  padding: 9px 13px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-input);
+  font-family: 'DM Sans', sans-serif;
+  font-size: .875rem;
+  color: var(--text-primary);
+  background: var(--surface-soft);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  -webkit-appearance: none;
+}
+
+.filters input[type="text"]:focus,
+.filters select:focus {
+  border-color: var(--glaucous);
+  box-shadow: 0 0 0 3px rgba(127, 138, 194, .18);
+  background: var(--surface);
+}
+
+.filters select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237f8ac2' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 34px;
+  cursor: pointer;
+}
+
+/* ── Question cards ──────────────────────────────────────── */
+.question-card {
+  display: block;
+  text-decoration: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 20px 24px;
+  margin-bottom: 12px;
+  transition: border-color var(--transition), box-shadow var(--transition),
+              transform var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.question-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--border);
+  transition: background var(--transition);
+}
+
+.question-card:hover {
+  border-color: #c0c5e0;
+  box-shadow: 0 4px 20px rgba(46, 55, 96, .09);
+  transform: translateY(-1px);
+}
+
+.question-card:hover::before {
+  background: linear-gradient(180deg, var(--glaucous), var(--indigo));
+}
+
+/* ── Card header ─────────────────────────────────────────── */
+.question-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.question-title {
+  font-size: .9375rem;
+  font-weight: 500;
+  color: var(--indigo);
+  line-height: 1.4;
+  flex: 1;
+}
+
+/* ── Card meta ───────────────────────────────────────────── */
+.question-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: .775rem;
+  color: var(--text-muted);
+  gap: 12px;
+}
+
+.question-meta .autor strong {
+  font-weight: 500;
+  color: #4a5270;
+}
+
+/* ── Status badges ───────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: .7rem;
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Map your Django status values below */
+.badge-aberta,
+.badge-open {
+  background: #edf4fb;
+  color: #0c447c;
+  border: 1px solid #b5d4f4;
+}
+
+.badge-respondida,
+.badge-answered {
+  background: #eef6e6;
+  color: #3b6011;
+  border: 1px solid #c0dd97;
+}
+
+.badge-fechada,
+.badge-closed {
+  background: #f5f6fa;
+  color: #4a5270;
+  border: 1px solid #dde0ec;
+}
+
+.badge-pendente,
+.badge-pending {
+  background: #fef6e8;
+  color: #6b3a06;
+  border: 1px solid #fac775;
+}
+
+/* ── Empty state ─────────────────────────────────────────── */
+.empty {
+  text-align: center;
+  padding: 64px 24px;
+  color: var(--text-muted);
+}
+
+.empty p {
+  font-size: .9375rem;
+  margin-bottom: 20px;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .container { padding: 32px 16px 48px; }
+
+  .page-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+
+  .question-card-header { flex-direction: column; gap: 8px; }
+
+  .question-meta { flex-direction: column; align-items: flex-start; gap: 4px; }
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -37,7 +332,7 @@
         <div class="question-meta">
             <span class="autor">
             por <strong>{{ pergunta.autor.first_name }}</strong>
-            {% if pergunta.autor.perfil %}&nbsp;·&nbsp;{{ pergunta.autor.perfil.departamento }}{% endif %}
+            {% if pergunta.autor.perfil %}&nbsp;·&nbsp;{{ pergunta.autor.perfil.departamento|upper }}{% endif %}
             </span>
             <span>{{ pergunta.criado_em|date:"d/m/Y H:i" }}</span>
         </div>

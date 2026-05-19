@@ -16,7 +16,7 @@ class FormCadastro(forms.ModelForm):
         model = User
         widgets = {
             'email': forms.EmailInput(attrs={'placeholder': 'E-mail'}),
-            'first_name': forms.TextInput(attrs={'placeholder': 'Apelido'}),
+            'first_name': forms.TextInput(attrs={'placeholder': 'Nome completo'}),
             'username': forms.TextInput(attrs={'placeholder': 'Nome de usuário'}),
         }
  
@@ -37,7 +37,7 @@ class FormCadastro(forms.ModelForm):
     def clean_first_name(self):
         first_name = self.cleaned_data['first_name']
         if len(first_name) < 3:
-            raise forms.ValidationError("Apelido precisa ter ao menos 2 caracteres.")
+            raise forms.ValidationError("Nome precisa ter ao menos 2 caracteres.")
         return first_name
 
     def clean_username(self):
@@ -65,7 +65,7 @@ class FormPergunta(forms.ModelForm):
         labels = { 'pergunta': 'Pergunta', 'titulo': 'Título' }
         model = Pergunta
         widgets = {
-            'pergunta': forms.Textarea(attrs={ 'placeholder': 'Descreva o problema, o que aconteceu, o que já tentou...', 'rows': 6 }),
+            'pergunta': forms.Textarea(attrs={ 'placeholder': 'Descreva o problema, o que aconteceu, o que já tentou...'}),
             'titulo': forms.TextInput(attrs={'placeholder': 'Título da pergunta'}),
         }
 
