@@ -1,11 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
-</head>
-<body>
-Perguntar
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}Nova Pergunta – Help System{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h1>Nova Pergunta</h1>
+    <p class="subtitle">Descreva sua dúvida com detalhes.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Título</label>
+            {{ form.titulo }}
+            {{ form.titulo.errors }}
+        </div>
+        <div class="form-group">
+            <label>Pergunta</label>
+            {{ form.pergunta }}
+            {{ form.pergunta.errors }}
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Perguntar</button>
+            <a href="{% url 'listagem' %}" class="btn btn-outline">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
