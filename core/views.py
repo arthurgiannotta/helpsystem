@@ -43,7 +43,7 @@ def autenticacao(request: HttpRequest):
     })
 
 @login_required(login_url='autenticacao')
-def detalhes(request: HttpRequest, id):
+def detalhes(request: HttpRequest, id: int):
     """Detalhes sobre a pergunta (data/autor/...). Listagem e adição de respostas."""
 
     # Obtém dados da pergunta

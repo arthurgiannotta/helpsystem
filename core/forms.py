@@ -33,6 +33,18 @@ class FormCadastro(forms.ModelForm):
             else:
                 self.add_error('password_confirm', 'Senhas não coincidem.')
         return cleaned_data
+
+    def clean_first_name(self):
+        first_name = self.cleaned_data['first_name']
+        if len(first_name) < 3:
+            raise forms.ValidationError("Apelido precisa ter ao menos 2 caracteres.")
+        return first_name
+
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        if len(username) < 6:
+            raise forms.ValidationError("Usuário precisa ter ao menos 6 caracteres.")
+        return username
  
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -53,7 +65,7 @@ class FormPergunta(forms.ModelForm):
         labels = { 'pergunta': 'Pergunta', 'titulo': 'Título' }
         model = Pergunta
         widgets = {
-            'pergunta': forms.Textarea(attrs={ 'placeholder': 'Descreva o problema, o que aconteceu, o que já tentou...' }),
+            'pergunta': forms.Textarea(attrs={ 'placeholder': 'Descreva o problema, o que aconteceu, o que já tentou...', 'rows': 6 }),
             'titulo': forms.TextInput(attrs={'placeholder': 'Título da pergunta'}),
         }
 

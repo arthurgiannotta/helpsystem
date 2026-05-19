@@ -10,7 +10,7 @@ class Perfil(models.Model):
         ('ti', 'Tecnologia da Informação'),
     ]
     departamento = models.CharField(max_length=3, choices=DEPARTAMENTO_CHOICES)
-    usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil', validators=[MinLengthValidator(6)])
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil')
  
     def __str__(self):
         return f"{self.usuario.username} – {self.departamento}"
