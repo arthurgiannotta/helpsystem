@@ -34,6 +34,14 @@ class FormCadastro(forms.ModelForm):
                 self.add_error('password_confirm', 'Senhas não coincidem.')
         return cleaned_data
 
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if not email.endswith('@gmail.com'):
+            raise forms.ValidationError(
+                "O e-mail precisa terminar com @gmail.com"
+            )
+        return email
+
     def clean_first_name(self):
         first_name = self.cleaned_data['first_name']
         if len(first_name) < 3:
