@@ -540,6 +540,7 @@ form {
   }
 }
 
+.question-actions,
 .resposta-actions {
   display: flex;
   flex-wrap: wrap;
@@ -547,6 +548,7 @@ form {
   margin-top: 18px;
 }
 
+.question-actions form,
 .resposta-actions form {
   display: inline-flex;
 }
@@ -568,13 +570,22 @@ form {
     <div class="question-box-header">
         <h1>{{ pergunta.titulo }}</h1>
         <span class="badge badge-{{ pergunta.status }}">{{ pergunta.get_status_display }}</span>
-        </div>
-        <div class="question-body">{{ pergunta.pergunta }}</div>
-        <div class="question-meta">
+    </div>
+    <div class="question-body">{{ pergunta.pergunta }}</div>
+    <div class="question-meta">
         <span>por <strong>{{ pergunta.autor.first_name }}</strong>
         {% if pergunta.autor.perfil %}&nbsp;·&nbsp;{{ pergunta.autor.perfil.departamento|upper }}{% endif %}
         </span>
         <span>{{ pergunta.criado_em|date:"d/m/Y \à\s H:i" }}</span>
+    </div>
+    <div class="question-actions">
+        {% if pode_fechar_pergunta %}
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="acao" value="fechar_pergunta">
+                <button type="submit" class="btn btn-outline" onclick="return confirm('Fechar esta pergunta?')">Fechar</button>
+            </form>
+        {% endif %}
     </div>
 </div>
 

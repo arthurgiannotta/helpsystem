@@ -24,6 +24,9 @@ def pode_editar(objeto, usuario):
 def pode_excluir(objeto, usuario):
     return administrador(usuario) or pode_editar(objeto, usuario)
 
+def pode_fechar(objeto, usuario):
+    return administrador(usuario) or objeto.autor_id == usuario.id
+
 # Views
 def autenticacao(request: HttpRequest):
     """Página de login e cadastro."""
@@ -83,6 +86,18 @@ def detalhes(request: HttpRequest, id: int):
                     editando_id = resposta.pk
                 else:
                     messages.error(request, 'O prazo para editar esta resposta expirou.')
+            case 'fechar_pergunta':
+                if pergunta.status == 'fechada':
+                    messages.info(request, 'Esta pergunta já está fechada.')
+                elif not pergunta.respostas.exists():
+                    messages.error(request, 'A pergunta precisa ter ao menos uma resposta para ser fechada.')
+                elif not pode_fechar(pergunta, request.user):
+                    messages.error(request, 'Você não pode fechar esta pergunta.')
+                else:
+                    pergunta.status = 'fechada'
+                    pergunta.save(update_fields=['status'])
+                    messages.success(request, 'Pergunta fechada com sucesso.')
+                return redirect('detalhes', id=pergunta.pk)
             case 'excluir_resposta':
                 resposta = get_object_or_404(Resposta, pk=request.POST.get('resposta_id'), pergunta=pergunta)
                 if pode_excluir(resposta, request.user):
@@ -127,6 +142,7 @@ def detalhes(request: HttpRequest, id: int):
         'respostas': respostas,
         'form_editar_resposta': form_editar_resposta,
         'form_resposta': form_resposta,
+        'pode_fechar_pergunta': pode_fechar(pergunta, request.user) and pergunta.status != 'fechada' and len(respostas) > 0,
     })
 
 @login_required(login_url='autenticacao')
