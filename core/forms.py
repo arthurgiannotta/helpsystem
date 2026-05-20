@@ -4,15 +4,19 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
-from .models import Perfil, Pergunta, Resposta
+from .models import Perfil, Pergunta, Resposta, StaffToken
 
 import unicodedata
 
 class FormCadastro(forms.ModelForm):
     departamento = forms.ChoiceField(choices=Perfil.DEPARTAMENTO_CHOICES)
     password = forms.CharField(label='Senha', widget=forms.PasswordInput(attrs={'placeholder': 'Senha'}))
-    password_confirm = forms.CharField(label='Confirmar Senha', widget=forms.PasswordInput(attrs={'placeholder': 'Confirmar Senha'}))
- 
+    password_confirm = forms.CharField(label='Confirmar Senha', widget=forms.PasswordInput(attrs={'placeholder': 'Confirmar senha'}))
+    staff_token = forms.CharField(
+        label='Token de equipe', required=False,
+        widget=forms.TextInput(attrs={ 'placeholder': 'Em branco se desconhece', 'autocomplete': 'off' }),
+    )
+
     class Meta:
         fields = ['email', 'first_name', 'username']
         model = User
@@ -50,6 +54,12 @@ class FormCadastro(forms.ModelForm):
             raise forms.ValidationError("Nome precisa ter ao menos 2 caracteres.")
         return first_name
 
+    def clean_staff_token(self):
+        staff_token = self.cleaned_data.get('staff_token', '').strip()
+        if staff_token and not StaffToken.valido(staff_token):
+            raise forms.ValidationError('Token de equipe inválido ou já utilizado.')
+        return staff_token
+
     def clean_username(self):
         username = self.cleaned_data['username']
         if len(username) < 6:
@@ -60,6 +70,8 @@ class FormCadastro(forms.ModelForm):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data['password'])
         if commit:
+            staff_token = self.cleaned_data.get('staff_token')
+            if staff_token: StaffToken.consumir(staff_token, user)
             user.save()
             Perfil.objects.create(usuario=user, departamento=self.cleaned_data['departamento'])
 

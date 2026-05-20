@@ -384,6 +384,11 @@ select {
             {{ form_cadastro.password_confirm }}
             {{ form_cadastro.password_confirm.errors }}
         </div>
+        <div class="form-group">
+            <label>Token de moderador</label>
+            {{ form_cadastro.staff_token }}
+            {{ form_cadastro.staff_token.errors }}
+        </div>
         <button type="submit" class="btn btn-primary">Criar Conta</button>
     </form>
   </div>

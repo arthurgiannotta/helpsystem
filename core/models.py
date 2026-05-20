@@ -1,6 +1,10 @@
 from django.contrib.auth.models import User
 from django.core.validators import MinLengthValidator
 from django.db import models
+from django.utils import timezone
+
+import hashlib
+import secrets
 
 class Perfil(models.Model):
     DEPARTAMENTO_CHOICES = [
@@ -47,3 +51,57 @@ class Resposta(models.Model):
 
     def __str__(self):
         return f"Resposta de {self.autor.first_name} para '{self.pergunta.titulo}'"
+
+class StaffToken(models.Model):
+    ativo = models.BooleanField(default=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    criado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='staff_tokens_criados')
+    descricao = models.CharField(max_length=120, blank=True)
+    prefixo = models.CharField(max_length=12, db_index=True, editable=False)
+    token_hash = models.CharField(max_length=64, unique=True, editable=False)
+    usado_em = models.DateTimeField(null=True, blank=True)
+    usado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='staff_tokens_usados')
+
+    class Meta:
+        ordering = ['-criado_em']
+
+    def __str__(self):
+        status = 'usado' if self.usado_em else 'ativo'
+        return f'{self.prefixo}... ({status})'
+
+    @staticmethod
+    def codigo():
+        return secrets.token_urlsafe(32)
+
+    @classmethod
+    def consumir(cls, codigo, usuario):
+        token = cls.valido(codigo)
+        if not token: return False
+        token.ativo = False
+        token.usado_em = timezone.now()
+        token.usado_por = usuario
+        token.save(update_fields=['ativo', 'usado_por', 'usado_em'])
+        if not usuario.is_staff:
+            usuario.is_staff = True
+            usuario.save(update_fields=['is_staff'])
+        return True
+
+    @classmethod
+    def criar(cls, criado_por, descricao=''):
+        codigo = cls.codigo()
+        token = cls.objects.create(
+            criado_por=criado_por,
+            descricao=descricao,
+            token_hash=cls.hashear(codigo),
+            prefixo=codigo[:12],
+        )
+        return token, codigo
+
+    @staticmethod
+    def hashear(codigo):
+        return hashlib.sha256(codigo.strip().encode()).hexdigest()
+
+    @classmethod
+    def valido(cls, codigo):
+        if not codigo: return None
+        return cls.objects.filter(token_hash=cls.hashear(codigo), ativo=True, usado_em__isnull=True).first()
