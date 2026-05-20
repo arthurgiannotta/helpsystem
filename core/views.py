@@ -169,6 +169,10 @@ def listagem(request: HttpRequest):
     })
 
 @login_required(login_url='autenticacao')
+def perfil(request: HttpRequest):
+    return redirect('')
+
+@login_required(login_url='autenticacao')
 def perguntar(request: HttpRequest):
     """Criação de nova pergunta."""
 
