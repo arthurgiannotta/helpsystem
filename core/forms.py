@@ -8,6 +8,11 @@ from .models import Perfil, Pergunta, Resposta, StaffToken
 
 import unicodedata
 
+class FormAdminUsuario(forms.Form):
+    departamento = forms.ChoiceField(choices=Perfil.DEPARTAMENTO_CHOICES)
+    first_name = forms.CharField(label='Apelido', min_length=3)
+    usuario = forms.IntegerField(widget=forms.HiddenInput)
+
 class FormCadastro(forms.ModelForm):
     departamento = forms.ChoiceField(choices=Perfil.DEPARTAMENTO_CHOICES)
     password = forms.CharField(label='Senha', widget=forms.PasswordInput(attrs={'placeholder': 'Senha'}))
@@ -164,21 +169,6 @@ class FormPerfil(forms.ModelForm):
             user.save()
             Perfil.objects.update_or_create(usuario=user, defaults={ 'departamento': self.cleaned_data['departamento'] })
         return user
-
-class FormReabrirPergunta(forms.ModelForm):
-    class Meta:
-        model = Pergunta
-        fields = ['motivo_reabertura']
-        labels = { 'motivo_reabertura': 'Motivo da reabertura' }
-        widgets = {
-            'motivo_reabertura': forms.Textarea(attrs={ 'placeholder': 'Explique por que esta pergunta deve ser reaberta...' }),
-        }
-
-    def clean_motivo(self):
-        motivo = self.cleaned_data['motivo_reabertura'].strip()
-        if len(motivo) < 5:
-            raise forms.ValidationError('O motivo precisa ter ao menos 5 caracteres.')
-        return motivo
 
 class FormResposta(forms.ModelForm):
     class Meta:

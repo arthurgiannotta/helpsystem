@@ -3,20 +3,27 @@ from datetime import timedelta
 from django.http import HttpRequest
 from django.contrib import messages
 from django.contrib.auth import login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.models import User
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .forms import FormCadastro, FormLogin, FormPergunta, FormReabrirPergunta, FormResposta
-from .models import Pergunta, Resposta
+from .forms import FormAdminUsuario, FormCadastro, FormLogin, FormPerfil, FormPergunta, FormResposta, FormStaffToken
+from .models import Perfil, Pergunta, Resposta, StaffToken
 
 # Funções Auxiliares
+def administrador(usuario):
+    return usuario.is_superuser
+
 def moderador(usuario):
-    return usuario.is_staff or usuario.is_superuser
+    return usuario.is_staff or administrador(usuario)
 
 def dentro_do_prazo(objeto, dias=1):
     return timezone.now() <= objeto.criado_em + timedelta(days=dias)
+
+def enviar_confirmacao_email(pedido, usuario):
+    pass
 
 def pode_editar(objeto, usuario):
     return objeto.autor_id == usuario.id and dentro_do_prazo(objeto)
@@ -30,6 +37,52 @@ def pode_fechar(objeto, usuario):
     else: return objeto.autor_id == usuario.id
 
 # Views
+@login_required(login_url='autenticacao')
+@user_passes_test(administrador, login_url='listagem')
+def administracao(request: HttpRequest):
+    """Página de administração de usuários."""
+
+    # Listagem de tokens e usuários
+    tokens = StaffToken.objects.select_related('criado_por', 'usado_por')
+    usuarios = User.objects.select_related('perfil').order_by('first_name', 'username')
+
+    # Responde aos endpoints
+    form_token = FormStaffToken(request.POST or None)
+    novo_codigo = None
+    if request.method == 'POST':
+        match request.POST.get('acao'):
+            case 'criar_token':
+                _, novo_codigo = StaffToken.criar(criado_por=request.user, descricao=form_token.cleaned_data['descricao'])
+                messages.success(request, 'Token de moderador criado com sucesso.')
+            case 'editar_usuario':
+                usuario = get_object_or_404(User, pk=request.POST.get('usuario_id'))
+                form = FormAdminUsuario(request.POST)
+                if form.is_valid():
+                    usuario.first_name = form.cleaned_data['first_name']
+                    usuario.save(update_fields=['first_name'])
+                    Perfil.objects.update_or_create(usuario=usuario, defaults={ 'departamento': form.cleaned_data['departamento'] })
+                    messages.success(request, 'Usuário atualizado com sucesso.')
+                    return redirect('administracao')
+            case 'revogar_token':
+                token = get_object_or_404(StaffToken, pk=request.POST.get('token_id'))
+                if token.usado_em:
+                    messages.error(request, 'Este token já foi utilizado.')
+                elif not token.ativo:
+                    messages.error(request, 'Este token já está revogado.')
+                else:
+                    token.ativo = False
+                    token.save(update_fields=['ativo'])
+                    messages.success(request, 'Token revogado com sucesso.')
+                return redirect('administracao')
+
+    # Renderiza página
+    return render(request, 'administracao.html', {
+        'form_token': form_token,
+        'novo_codigo': novo_codigo,
+        'tokens': tokens,
+        'usuarios': usuarios
+    })
+
 def autenticacao(request: HttpRequest):
     """Página de login e cadastro."""
 
@@ -203,7 +256,18 @@ def listagem(request: HttpRequest):
 
 @login_required(login_url='autenticacao')
 def perfil(request: HttpRequest):
-    return redirect('')
+    form = FormPerfil(request.POST or None, instance=request.user)
+    if request.method == 'POST' and form.is_valid():
+        email_antigo = request.user.email
+        user = form.save()
+        messages.success(request, 'Perfil atualizado com sucesso.')
+        if user.email != email_antigo:
+            enviar_confirmacao_email(request, user)
+            #logout(request)
+            #messages.info(request, 'Confirme o novo e-mail para acessar sua conta novamente.')
+            #return redirect('autenticacao')
+        return redirect('perfil')
+    return render(request, 'perfil.html', { 'form': form })
 
 @login_required(login_url='autenticacao')
 def perguntar(request: HttpRequest, id: int | None = None):

@@ -1,7 +1,8 @@
 from django.urls import path, re_path
-from .views import autenticacao, detalhes, listagem, perfil, perguntar, sair
+from .views import administracao, autenticacao, detalhes, listagem, perfil, perguntar, sair
 
 urlpatterns = [
+    path('administracao/', administracao, name='administracao'),
     path('autenticacao/', autenticacao, name='autenticacao'),
     path('confirmar-email/<uidb64>/<token>/', autenticacao, name='confirmar_email'),
     path('detalhes/<int:id>/', detalhes, name='detalhes'),
