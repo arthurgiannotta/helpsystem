@@ -80,14 +80,14 @@ class FormPergunta(forms.ModelForm):
 class FormReabrirPergunta(forms.ModelForm):
     class Meta:
         model = Pergunta
-        fields = ['motivo']
-        labels = { 'motivo': 'Motivo da reabertura' }
+        fields = ['motivo_reabertura']
+        labels = { 'motivo_reabertura': 'Motivo da reabertura' }
         widgets = {
-            'motivo': forms.Textarea(attrs={ 'placeholder': 'Explique por que esta pergunta deve ser reaberta...' }),
+            'motivo_reabertura': forms.Textarea(attrs={ 'placeholder': 'Explique por que esta pergunta deve ser reaberta...' }),
         }
 
     def clean_motivo(self):
-        motivo = self.cleaned_data['motivo'].strip()
+        motivo = self.cleaned_data['motivo_reabertura'].strip()
         if len(motivo) < 5:
             raise forms.ValidationError('O motivo precisa ter ao menos 5 caracteres.')
         return motivo
