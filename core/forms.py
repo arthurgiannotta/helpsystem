@@ -46,6 +46,8 @@ class FormCadastro(forms.ModelForm):
             raise forms.ValidationError(
                 "O e-mail precisa terminar com @gmail.com"
             )
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError('Este e-mail já está em uso.')
         return email
 
     def clean_first_name(self):
@@ -68,6 +70,7 @@ class FormCadastro(forms.ModelForm):
  
     def save(self, commit=True):
         user = super().save(commit=False)
+        #user.is_active = False
         user.set_password(self.cleaned_data['password'])
         if commit:
             staff_token = self.cleaned_data.get('staff_token')
@@ -108,6 +111,60 @@ class FormPergunta(forms.ModelForm):
                 raise forms.ValidationError(f'PERGUNTA_EXISTENTE:{pergunta.id}')
         return cleaned_data
 
+class FormPerfil(forms.ModelForm):
+    departamento = forms.ChoiceField(choices=Perfil.DEPARTAMENTO_CHOICES)
+    staff_token = forms.CharField(
+        label='Token de equipe', required=False,
+        widget=forms.TextInput(attrs={ 'placeholder': 'Em branco se desconhece', 'autocomplete': 'off' }),
+    )
+
+    class Meta:
+        model = User
+        fields = ['email', 'first_name']
+        labels = { 'email': 'E-mail', 'first_name': 'Apelido' }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and hasattr(self.instance, 'perfil'):
+            self.fields['departamento'].initial = self.instance.perfil.departamento
+
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if not email.endswith('@gmail.com'):
+            raise forms.ValidationError('O e-mail precisa terminar com @gmail.com.')
+        usuarios = User.objects.filter(email=email)
+        if self.instance.pk:
+            usuarios = usuarios.exclude(pk=self.instance.pk)
+        if usuarios.exists():
+            raise forms.ValidationError('Este e-mail já está em uso.')
+        return email
+
+    def clean_first_name(self):
+        first_name = self.cleaned_data['first_name']
+        if len(first_name) < 3:
+            raise forms.ValidationError('Apelido precisa ter ao menos 3 caracteres.')
+        return first_name
+
+    def clean_staff_token(self):
+        staff_token = self.cleaned_data.get('staff_token', '').strip()
+        if not staff_token:
+            return staff_token
+        if self.instance and self.instance.is_staff:
+            raise forms.ValidationError('Você já possui permissão de moderador.')
+        if not StaffToken.valido(staff_token):
+            raise forms.ValidationError('Token de equipe inválido ou já utilizado.')
+        return staff_token
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        #if user.pk and user.email != self.initial.get('email'): user.is_active = False
+        if commit:
+            staff_token = self.cleaned_data.get('staff_token')
+            if staff_token: StaffToken.consumir(staff_token, user)
+            user.save()
+            Perfil.objects.update_or_create(usuario=user, defaults={ 'departamento': self.cleaned_data['departamento'] })
+        return user
+
 class FormReabrirPergunta(forms.ModelForm):
     class Meta:
         model = Pergunta
@@ -129,3 +186,14 @@ class FormResposta(forms.ModelForm):
         fields = ['resposta']
         widgets = { 'resposta': forms.Textarea(attrs={'placeholder': 'Escreva sua resposta...'}) }
         labels = { 'resposta': 'Resposta' }
+
+class FormStaffToken(forms.Form):
+    descricao = forms.CharField(
+        label='Descrição',
+        required=False,
+        max_length=120,
+        min_length=10,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Motivação para criação do token',
+        }),
+    )
