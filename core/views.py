@@ -12,7 +12,7 @@ from .forms import FormCadastro, FormLogin, FormPergunta, FormReabrirPergunta, F
 from .models import Pergunta, Resposta
 
 # Funções Auxiliares
-def administrador(usuario):
+def moderador(usuario):
     return usuario.is_staff or usuario.is_superuser
 
 def dentro_do_prazo(objeto, dias=1):
@@ -22,10 +22,10 @@ def pode_editar(objeto, usuario):
     return objeto.autor_id == usuario.id and dentro_do_prazo(objeto)
 
 def pode_excluir(objeto, usuario):
-    return administrador(usuario) or pode_editar(objeto, usuario)
+    return moderador(usuario) or pode_editar(objeto, usuario)
 
 def pode_fechar(objeto, usuario):
-    return administrador(usuario) or objeto.autor_id == usuario.id
+    return moderador(usuario) or objeto.autor_id == usuario.id
 
 # Views
 def autenticacao(request: HttpRequest):
@@ -70,8 +70,9 @@ def detalhes(request: HttpRequest, id: int):
     pergunta = get_object_or_404(Pergunta.objects.select_related('autor', 'autor__perfil'), pk=id)
     respostas = pergunta.respostas.select_related('autor', 'autor__perfil')
     for resposta in respostas:
-        resposta.pode_editar = pode_editar(resposta, request.user)
-        resposta.pode_excluir = pode_excluir(resposta, request.user)
+        modificavel = moderador(request.user) or pergunta.status != 'fechada'
+        resposta.pode_editar = modificavel and pode_editar(resposta, request.user)
+        resposta.pode_excluir = modificavel and pode_excluir(resposta, request.user)
 
     # Cria formulário de resposta
     editando_id = None
@@ -81,13 +82,15 @@ def detalhes(request: HttpRequest, id: int):
         match request.POST.get('acao'):
             case 'editar_resposta':
                 resposta = get_object_or_404(Resposta, pk=request.POST.get('resposta_id'), pergunta=pergunta)
-                if pode_editar(resposta, request.user):
+                if not moderador(request.user) and pergunta.status == 'fechada':
+                    messages.error(request, 'A resposta não pode ser editada quando a pergunta está fechada.')
+                elif pode_editar(resposta, request.user):
                     form_editar_resposta = FormResposta(instance=resposta)
                     editando_id = resposta.pk
                 else:
                     messages.error(request, 'O prazo para editar esta resposta expirou.')
             case 'excluir_pergunta':
-                if not administrador(request.user) and pergunta.status == 'fechada':
+                if not moderador(request.user) and pergunta.status == 'fechada':
                     messages.error(request, 'A pergunta não pode ser excluida quando fechada.')
                 elif pode_excluir(pergunta, request.user):
                     pergunta.delete()
@@ -98,7 +101,9 @@ def detalhes(request: HttpRequest, id: int):
                     return redirect('detalhes', id=pergunta.pk)
             case 'excluir_resposta':
                 resposta = get_object_or_404(Resposta, pk=request.POST.get('resposta_id'), pergunta=pergunta)
-                if pode_excluir(resposta, request.user):
+                if not moderador(request.user) and pergunta.status == 'fechada':
+                    messages.error(request, 'A resposta não pode ser excluida quando a pergunta está fechada.')
+                elif pode_excluir(resposta, request.user):
                     resposta.delete()
                     if not pergunta.respostas.exists() and pergunta.status in ['respondida', 'fechada']:
                         pergunta.status = 'aberta'
@@ -153,7 +158,7 @@ def detalhes(request: HttpRequest, id: int):
         'form_editar_resposta': form_editar_resposta,
         'form_resposta': form_resposta,
         'pode_editar_pergunta': pode_editar(pergunta, request.user) and pergunta.status != 'fechada',
-        'pode_excluir_pergunta': pode_excluir(pergunta, request.user) and (administrador(request.user) or pergunta.status != 'fechada'),
+        'pode_excluir_pergunta': pode_excluir(pergunta, request.user) and (moderador(request.user) or pergunta.status != 'fechada'),
         'pode_fechar_pergunta': pode_fechar(pergunta, request.user) and pergunta.status != 'fechada' and len(respostas) > 0,
     })
 
