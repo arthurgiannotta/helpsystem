@@ -21,7 +21,10 @@ class Pergunta(models.Model):
     STATUS_CHOICES = [('aberta', 'Aberta'), ('fechada', 'Fechada'), ('respondida', 'Respondida')]
     autor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='perguntas')
     criado_em = models.DateTimeField(auto_now_add=True)
+    motivo_reabertura = models.TextField(blank=True, validators=[MinLengthValidator(5)])
     pergunta = models.TextField(validators=[MinLengthValidator(10)])
+    reaberta_em = models.DateTimeField(null=True, blank=True)
+    reaberta_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='aberta')
     titulo = models.CharField(max_length=200, validators=[MinLengthValidator(10)])
 
