@@ -25,7 +25,9 @@ def pode_excluir(objeto, usuario):
     return moderador(usuario) or pode_editar(objeto, usuario)
 
 def pode_fechar(objeto, usuario):
-    return moderador(usuario) or objeto.autor_id == usuario.id
+    if moderador(usuario): return True
+    if objeto.reaberta_por_id: return objeto.reaberta_por_id == usuario.id
+    else: return objeto.autor_id == usuario.id
 
 # Views
 def autenticacao(request: HttpRequest):
@@ -124,6 +126,20 @@ def detalhes(request: HttpRequest, id: int):
                     pergunta.save(update_fields=['status'])
                     messages.success(request, 'Pergunta fechada com sucesso.')
                 return redirect('detalhes', id=pergunta.pk)
+            case 'reabrir_pergunta':
+                motivo = request.POST.get('motivo_reabertura', '').strip()
+                if pergunta.status != 'fechada':
+                    messages.error(request, 'Esta pergunta não está fechada.')
+                elif len(motivo) < 10:
+                    messages.error(request, 'Informe um motivo com ao menos 10 caracteres.')
+                else:
+                    pergunta.status = 'aberta'
+                    pergunta.motivo_reabertura = motivo
+                    pergunta.reaberta_em = timezone.now()
+                    pergunta.reaberta_por = request.user
+                    pergunta.save(update_fields=['status', 'motivo_reabertura', 'reaberta_em', 'reaberta_por'])
+                    messages.success(request, 'Pergunta reaberta com sucesso.')
+                return redirect('detalhes', id=pergunta.pk)
             case 'responder':
                 if pergunta.status == 'fechada':
                     messages.error(request, 'Reabra a pergunta antes de responder.')
@@ -157,7 +173,7 @@ def detalhes(request: HttpRequest, id: int):
         'respostas': respostas,
         'form_editar_resposta': form_editar_resposta,
         'form_resposta': form_resposta,
-        'pode_editar_pergunta': pode_editar(pergunta, request.user) and pergunta.status != 'fechada',
+        'pode_editar_pergunta': pode_editar(pergunta, request.user) and not pergunta.motivo_reabertura and pergunta.status != 'fechada',
         'pode_excluir_pergunta': pode_excluir(pergunta, request.user) and (moderador(request.user) or pergunta.status != 'fechada'),
         'pode_fechar_pergunta': pode_fechar(pergunta, request.user) and pergunta.status != 'fechada' and len(respostas) > 0,
     })
@@ -199,6 +215,9 @@ def perguntar(request: HttpRequest, id: int | None = None):
         pergunta = get_object_or_404(Pergunta, pk=id)
         if pergunta.status == 'fechada':
             messages.error(request, 'A pergunta não pode ser editada quando fechada.')
+            return redirect('detalhes', id=pergunta.pk)
+        elif pergunta.motivo_reabertura:
+            messages.error(request, 'A pergunta não pode ser editada se já foi reaberta.')
             return redirect('detalhes', id=pergunta.pk)
         elif not pode_editar(pergunta, request.user):
             messages.error(request, 'O prazo para editar esta pergunta expirou.')

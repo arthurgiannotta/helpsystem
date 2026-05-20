@@ -562,6 +562,48 @@ form {
   background: #fdf0f0;
   color: #7a1f1f;
 }
+
+.reopen-details {
+    margin-bottom: 24px;
+    border: 1px solid #fac775;
+    border-radius: var(--radius-card);
+    background: #fef6e8;
+    color: #6b3a06;
+    overflow: hidden;
+}
+
+.reopen-details summary {
+    cursor: pointer;
+    padding: 14px 18px;
+    font-weight: 700;
+    list-style-position: inside;
+}
+
+.reopen-details summary small {
+    font-weight: 500;
+    color: #8a5a16;
+}
+
+.reopen-details[open] summary {
+    border-bottom: 1px solid #fac775;
+}
+
+.reopen-reason {
+    padding: 16px 18px;
+}
+
+.reopen-reason p {
+    line-height: 1.6;
+    white-space: pre-line;
+}
+
+.compact-reopen {
+    margin: 0;
+    padding: 18px;
+    border: 0;
+    box-shadow: none;
+    background: transparent;
+}
 </style>
 {% endblock %}
 
@@ -603,6 +645,38 @@ form {
         {% endif %}
     </div>
 </div>
+
+{% if pergunta.status == 'fechada' %}
+    <details class="reopen-details">
+        <summary>Reabrir Pergunta</summary>
+        <div class="add-resposta compact-reopen">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="acao" value="reabrir_pergunta">
+                <div class="form-group">
+                    <label>Motivo da reabertura</label>
+                    <textarea name="motivo_reabertura" placeholder="Por que esta pergunta deve ser reaberta..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Reabrir</button>
+            </form>
+        </div>
+    </details>
+{% elif pergunta.motivo_reabertura %}
+    <details class="reopen-details" open>
+        <summary>
+            Motivo da reabertura
+            {% if pergunta.reaberta_por %}
+                <small>
+                    · {{ pergunta.reaberta_por.first_name }}
+                    {% if pergunta.reaberta_em %}· {{ pergunta.reaberta_em|date:"d/m/Y H:i" }}{% endif %}
+                </small>
+            {% endif %}
+        </summary>
+        <div class="reopen-reason">
+            <p>{{ pergunta.motivo_reabertura }}</p>
+        </div>
+    </details>
+{% endif %}
 
 <div class="section-title">
   Respostas <span>{{ respostas.count }}</span>
