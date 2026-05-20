@@ -158,6 +158,7 @@ def perguntar(request: HttpRequest):
 
     # Salva a pergunta no banco de dados
     form_pergunta = FormPergunta()
+    pergunta_existente_id = None
     if request.method == 'POST':
         form_pergunta = FormPergunta(data=request.POST)
         if form_pergunta.is_valid():
@@ -166,9 +167,15 @@ def perguntar(request: HttpRequest):
             pergunta.save()
             messages.success(request, 'Pergunta criada com sucesso!')
             return redirect('detalhes', id=pergunta.pk)
+        else:
+            erros = form_pergunta.non_field_errors()
+            for erro in erros:
+                if str(erro).startswith('PERGUNTA_EXISTENTE:'):
+                    pergunta_existente_id = str(erro).split(':')[1]
+                    break
 
     # Renderiza página
-    return render(request, 'perguntar.html', { 'form_pergunta': form_pergunta })
+    return render(request, 'perguntar.html', { 'form_pergunta': form_pergunta, 'pergunta_existente_id': pergunta_existente_id, })
 
 @login_required(login_url='autenticacao')
 def sair(request: HttpRequest):

@@ -6,6 +6,8 @@ from django.core.exceptions import ValidationError
 
 from .models import Perfil, Pergunta, Resposta
 
+import unicodedata
+
 class FormCadastro(forms.ModelForm):
     departamento = forms.ChoiceField(choices=Perfil.DEPARTAMENTO_CHOICES)
     password = forms.CharField(label='Senha', widget=forms.PasswordInput(attrs={'placeholder': 'Senha'}))
@@ -76,6 +78,21 @@ class FormPergunta(forms.ModelForm):
             'pergunta': forms.Textarea(attrs={ 'placeholder': 'Descreva o problema, o que aconteceu, o que já tentou...'}),
             'titulo': forms.TextInput(attrs={'placeholder': 'Título da pergunta'}),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        normalizar_texto = lambda texto: ''.join(
+            c for c in unicodedata.normalize('NFD', texto.lower().strip()) if unicodedata.category(c) != 'Mn'
+        )
+        titulo = cleaned_data.get('titulo')
+        if titulo:
+            titulo_normalizado = normalizar_texto(titulo)
+            perguntas = Pergunta.objects.all()
+            for pergunta in perguntas:
+                titulo_existente = normalizar_texto(pergunta.titulo)
+                if titulo_existente == titulo_normalizado:
+                    raise forms.ValidationError(f'PERGUNTA_EXISTENTE:{pergunta.id}')
+        return cleaned_data
 
 class FormReabrirPergunta(forms.ModelForm):
     class Meta:

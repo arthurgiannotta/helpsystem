@@ -340,7 +340,12 @@ form {
 <div class="form-card">
     <h1>Nova Pergunta</h1>
     <p class="subtitle">Descreva sua dúvida com detalhes.</p>
-
+    {% if pergunta_existente_id %}
+      <script>
+        const resposta = confirm("Já existe uma pergunta com este título. Deseja visualizá-la?");
+        if (resposta) { window.location.href = "/detalhes/{{ pergunta_existente_id }}/"; }
+      </script>
+    {% endif %}
     <form method="post">
         {% csrf_token %}
         <div class="form-group">
