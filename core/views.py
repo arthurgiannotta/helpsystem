@@ -86,6 +86,27 @@ def detalhes(request: HttpRequest, id: int):
                     editando_id = resposta.pk
                 else:
                     messages.error(request, 'O prazo para editar esta resposta expirou.')
+            case 'excluir_pergunta':
+                if not administrador(request.user) and pergunta.status == 'fechada':
+                    messages.error(request, 'A pergunta não pode ser excluida quando fechada.')
+                elif pode_excluir(pergunta, request.user):
+                    pergunta.delete()
+                    messages.success(request, 'Pergunta excluída com sucesso.')
+                    return redirect('listagem')
+                else:
+                    messages.error(request, 'Você não pode excluir esta pergunta.')
+                    return redirect('detalhes', id=pergunta.pk)
+            case 'excluir_resposta':
+                resposta = get_object_or_404(Resposta, pk=request.POST.get('resposta_id'), pergunta=pergunta)
+                if pode_excluir(resposta, request.user):
+                    resposta.delete()
+                    if not pergunta.respostas.exists() and pergunta.status in ['respondida', 'fechada']:
+                        pergunta.status = 'aberta'
+                        pergunta.save(update_fields=['status'])
+                    messages.success(request, 'Resposta excluída com sucesso.')
+                else:
+                    messages.error(request, 'O prazo para excluir esta resposta expirou.')
+                return redirect('detalhes', id=pergunta.pk)
             case 'fechar_pergunta':
                 if pergunta.status == 'fechada':
                     messages.info(request, 'Esta pergunta já está fechada.')
@@ -97,17 +118,6 @@ def detalhes(request: HttpRequest, id: int):
                     pergunta.status = 'fechada'
                     pergunta.save(update_fields=['status'])
                     messages.success(request, 'Pergunta fechada com sucesso.')
-                return redirect('detalhes', id=pergunta.pk)
-            case 'excluir_resposta':
-                resposta = get_object_or_404(Resposta, pk=request.POST.get('resposta_id'), pergunta=pergunta)
-                if pode_excluir(resposta, request.user):
-                    resposta.delete()
-                    if not pergunta.respostas.exists() and pergunta.status in ['respondida', 'fechada']:
-                        pergunta.status = 'aberta'
-                        pergunta.save(update_fields=['status'])
-                    messages.success(request, 'Resposta excluída com sucesso.')
-                else:
-                    messages.error(request, 'O prazo para excluir esta resposta expirou.')
                 return redirect('detalhes', id=pergunta.pk)
             case 'responder':
                 if pergunta.status == 'fechada':
@@ -142,6 +152,8 @@ def detalhes(request: HttpRequest, id: int):
         'respostas': respostas,
         'form_editar_resposta': form_editar_resposta,
         'form_resposta': form_resposta,
+        'pode_editar_pergunta': pode_editar(pergunta, request.user) and pergunta.status != 'fechada',
+        'pode_excluir_pergunta': pode_excluir(pergunta, request.user) and (administrador(request.user) or pergunta.status != 'fechada'),
         'pode_fechar_pergunta': pode_fechar(pergunta, request.user) and pergunta.status != 'fechada' and len(respostas) > 0,
     })
 
@@ -173,19 +185,30 @@ def perfil(request: HttpRequest):
     return redirect('')
 
 @login_required(login_url='autenticacao')
-def perguntar(request: HttpRequest):
+def perguntar(request: HttpRequest, id: int | None = None):
     """Criação de nova pergunta."""
 
+    # Obtém possível pergunta já existente
+    pergunta = None
+    if id:
+        pergunta = get_object_or_404(Pergunta, pk=id)
+        if pergunta.status == 'fechada':
+            messages.error(request, 'A pergunta não pode ser editada quando fechada.')
+            return redirect('detalhes', id=pergunta.pk)
+        elif not pode_editar(pergunta, request.user):
+            messages.error(request, 'O prazo para editar esta pergunta expirou.')
+            return redirect('detalhes', id=pergunta.pk)
+
     # Salva a pergunta no banco de dados
-    form_pergunta = FormPergunta()
+    form_pergunta = FormPergunta(data=request.POST or None, instance=pergunta)
     pergunta_existente_id = None
     if request.method == 'POST':
-        form_pergunta = FormPergunta(data=request.POST)
         if form_pergunta.is_valid():
             pergunta = form_pergunta.save(commit=False)
-            pergunta.autor = request.user
+            if not pergunta.pk:
+                pergunta.autor = request.user
             pergunta.save()
-            messages.success(request, 'Pergunta criada com sucesso!')
+            messages.success(request, 'Pergunta atualizada com sucesso.' if id else 'Pergunta criada com sucesso.')
             return redirect('detalhes', id=pergunta.pk)
         else:
             erros = form_pergunta.non_field_errors()
@@ -195,7 +218,13 @@ def perguntar(request: HttpRequest):
                     break
 
     # Renderiza página
-    return render(request, 'perguntar.html', { 'form_pergunta': form_pergunta, 'pergunta_existente_id': pergunta_existente_id, })
+    return render(request, 'perguntar.html', {
+        'form_pergunta': form_pergunta,
+        'pergunta_existente_id': pergunta_existente_id,
+        'subtitulo': 'Atualize sua dúvida.' if id else 'Descreva sua dúvida com detalhes.',
+        'texto_botao': 'Salvar' if id else 'Perguntar',
+        'titulo_pagina': 'Editar Pergunta' if id else 'Nova Pergunta',
+    })
 
 @login_required(login_url='autenticacao')
 def sair(request: HttpRequest):

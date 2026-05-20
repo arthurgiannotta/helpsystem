@@ -576,9 +576,24 @@ form {
         <span>por <strong>{{ pergunta.autor.first_name }}</strong>
         {% if pergunta.autor.perfil %}&nbsp;·&nbsp;{{ pergunta.autor.perfil.departamento|upper }}{% endif %}
         </span>
-        <span>{{ pergunta.criado_em|date:"d/m/Y \à\s H:i" }}</span>
+        <span>
+            Criada em {{ pergunta.criado_em|date:"d/m/Y H:i" }}
+            {% if pergunta.editado_em|date:"U" > pergunta.criado_em|date:"U" %}
+                &nbsp;·&nbsp; Editada em {{ pergunta.editado_em|date:"d/m/Y H:i" }}
+            {% endif %}
+        </span>
     </div>
     <div class="question-actions">
+        {% if pode_editar_pergunta %}
+            <a href="{% url 'editar_pergunta' pergunta.pk %}" class="btn btn-outline">Editar</a>
+        {% endif %}
+        {% if pode_excluir_pergunta %}
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="acao" value="excluir_pergunta">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Excluir esta pergunta?')">Excluir</button>
+            </form>
+        {% endif %}
         {% if pode_fechar_pergunta %}
             <form method="post">
                 {% csrf_token %}

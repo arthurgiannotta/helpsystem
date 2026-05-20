@@ -81,17 +81,19 @@ class FormPergunta(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+        titulo = cleaned_data.get('titulo')
+        if not titulo: return cleaned_data
         normalizar_texto = lambda texto: ''.join(
             c for c in unicodedata.normalize('NFD', texto.lower().strip()) if unicodedata.category(c) != 'Mn'
         )
-        titulo = cleaned_data.get('titulo')
-        if titulo:
-            titulo_normalizado = normalizar_texto(titulo)
-            perguntas = Pergunta.objects.all()
-            for pergunta in perguntas:
-                titulo_existente = normalizar_texto(pergunta.titulo)
-                if titulo_existente == titulo_normalizado:
-                    raise forms.ValidationError(f'PERGUNTA_EXISTENTE:{pergunta.id}')
+        titulo_normalizado = normalizar_texto(titulo)
+        perguntas = Pergunta.objects.only('id', 'titulo')
+        if self.instance.pk:
+            perguntas = perguntas.exclude(pk=self.instance.pk)
+        for pergunta in perguntas:
+            titulo_existente = normalizar_texto(pergunta.titulo)
+            if titulo_existente == titulo_normalizado:
+                raise forms.ValidationError(f'PERGUNTA_EXISTENTE:{pergunta.id}')
         return cleaned_data
 
 class FormReabrirPergunta(forms.ModelForm):

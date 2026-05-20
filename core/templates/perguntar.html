@@ -338,8 +338,8 @@ form {
 
 {% block content %}
 <div class="form-card">
-    <h1>Nova Pergunta</h1>
-    <p class="subtitle">Descreva sua dúvida com detalhes.</p>
+    <h1>{{ titulo_pagina|default:'Nova Pergunta' }}</h1>
+    <p class="subtitle">{{ subtitulo|default:'Descreva sua dúvida com detalhes.' }}</p>
     {% if pergunta_existente_id %}
       <script>
         const resposta = confirm("Já existe uma pergunta com este título. Deseja visualizá-la?");
@@ -359,7 +359,7 @@ form {
             {{ form_pergunta.pergunta.errors }}
         </div>
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Perguntar</button>
+            <button type="submit" class="btn btn-primary">{{ texto_botao|default:'Perguntar' }}</button>
             <a href="{% url 'listagem' %}" class="btn btn-outline">Cancelar</a>
         </div>
     </form>
