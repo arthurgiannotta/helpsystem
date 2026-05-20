@@ -6,8 +6,10 @@ class Perfil(models.Model):
     DEPARTAMENTO_CHOICES = [
         ('fin', 'Financeiro'),
         ('jur', 'Jurídico'),
+        ('ma', 'Marketing'),
         ('rh', 'Recursos Humanos'),
         ('ti', 'Tecnologia da Informação'),
+        ('ou', 'Outros'),
     ]
     departamento = models.CharField(max_length=3, choices=DEPARTAMENTO_CHOICES)
     usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil')
