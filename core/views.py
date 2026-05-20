@@ -9,11 +9,20 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from .forms import FormCadastro, FormLogin, FormPergunta, FormReabrirPergunta, FormResposta
-from .models import Pergunta
+from .models import Pergunta, Resposta
 
 # Funções Auxiliares
-def dentro_do_prazo(objeto):
-    return timezone.now() <= objeto.criado_em + timedelta(days=1)
+def administrador(usuario):
+    return usuario.is_staff or usuario.is_superuser
+
+def dentro_do_prazo(objeto, dias=1):
+    return timezone.now() <= objeto.criado_em + timedelta(days=dias)
+
+def pode_editar(objeto, usuario):
+    return objeto.autor_id == usuario.id and dentro_do_prazo(objeto)
+
+def pode_excluir(objeto, usuario):
+    return administrador(usuario) or pode_editar(objeto, usuario)
 
 # Views
 def autenticacao(request: HttpRequest):
@@ -57,11 +66,34 @@ def detalhes(request: HttpRequest, id: int):
     # Obtém dados da pergunta
     pergunta = get_object_or_404(Pergunta.objects.select_related('autor', 'autor__perfil'), pk=id)
     respostas = pergunta.respostas.select_related('autor', 'autor__perfil')
+    for resposta in respostas:
+        resposta.pode_editar = pode_editar(resposta, request.user)
+        resposta.pode_excluir = pode_excluir(resposta, request.user)
 
     # Cria formulário de resposta
+    editando_id = None
+    form_editar_resposta = None
     form_resposta = FormResposta()
     if request.method == 'POST':
         match request.POST.get('acao'):
+            case 'editar_resposta':
+                resposta = get_object_or_404(Resposta, pk=request.POST.get('resposta_id'), pergunta=pergunta)
+                if pode_editar(resposta, request.user):
+                    form_editar_resposta = FormResposta(instance=resposta)
+                    editando_id = resposta.pk
+                else:
+                    messages.error(request, 'O prazo para editar esta resposta expirou.')
+            case 'excluir_resposta':
+                resposta = get_object_or_404(Resposta, pk=request.POST.get('resposta_id'), pergunta=pergunta)
+                if pode_excluir(resposta, request.user):
+                    resposta.delete()
+                    if not pergunta.respostas.exists() and pergunta.status in ['respondida', 'fechada']:
+                        pergunta.status = 'aberta'
+                        pergunta.save(update_fields=['status'])
+                    messages.success(request, 'Resposta excluída com sucesso.')
+                else:
+                    messages.error(request, 'O prazo para excluir esta resposta expirou.')
+                return redirect('detalhes', id=pergunta.pk)
             case 'responder':
                 if pergunta.status == 'fechada':
                     messages.error(request, 'Reabra a pergunta antes de responder.')
@@ -77,11 +109,23 @@ def detalhes(request: HttpRequest, id: int):
                         pergunta.save(update_fields=['status'])
                     messages.success(request, 'Resposta enviada!')
                     return redirect('detalhes', id=id)
+            case 'salvar_resposta':
+                resposta = get_object_or_404(Resposta, pk=request.POST.get('resposta_id'), pergunta=pergunta)
+                if pode_editar(resposta, request.user):
+                    form_editar_resposta = FormResposta(request.POST, instance=resposta)
+                    if resposta.resposta != request.POST.get('resposta', '') and form_editar_resposta.is_valid():
+                        form_editar_resposta.save()
+                        messages.success(request, 'Resposta atualizada com sucesso.')
+                        return redirect('detalhes', id=pergunta.pk)
+                else:
+                    messages.error(request, 'O prazo para editar esta resposta expirou.')
 
     # Renderiza página
     return render(request, 'detalhes.html', {
+        'editando_id': editando_id,
         'pergunta': pergunta,
         'respostas': respostas,
+        'form_editar_resposta': form_editar_resposta,
         'form_resposta': form_resposta,
     })
 

@@ -539,6 +539,27 @@ form {
     padding: 14px 16px;
   }
 }
+
+.resposta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.resposta-actions form {
+  display: inline-flex;
+}
+
+.inline-edit {
+  margin-top: 14px;
+}
+
+.btn-danger {
+  border: 1.5px solid #f09595;
+  background: #fdf0f0;
+  color: #7a1f1f;
+}
 </style>
 {% endblock %}
 
@@ -557,8 +578,6 @@ form {
     </div>
 </div>
 
-
-
 <div class="section-title">
   Respostas <span>{{ respostas.count }}</span>
 </div>
@@ -571,9 +590,49 @@ form {
                 <div class="resposta-meta">
                     <strong>{{ resposta.autor.first_name }}</strong>
                     {% if resposta.autor.perfil %}&nbsp;·&nbsp;{{ resposta.autor.perfil.departamento|upper }}{% endif %}
-                    &nbsp;·&nbsp; {{ r.criado_em|date:"d/m/Y H:i" }}
+                    &nbsp;·&nbsp; Criada em {{ resposta.criado_em|date:"d/m/Y H:i" }}
+                    {% if resposta.editado_em|date:"U" > resposta.criado_em|date:"U" %}
+                      &nbsp;·&nbsp; Editada em {{ resposta.editado_em|date:"d/m/Y H:i" }}
+                    {% endif %}
                 </div>
-                <div class="resposta-body">{{ resposta.resposta }}</div>
+                {% if editando_id == resposta.pk %}
+                  <form method="post" class="inline-edit">
+                    {% csrf_token %}
+                    <input type="hidden" name="acao" value="salvar_resposta">
+                    <input type="hidden" name="resposta_id" value="{{ resposta.pk }}">
+                    <div class="form-group">
+                      {{ form_editar_resposta.resposta }}
+                      {{ form_editar_resposta.resposta.errors }}
+                    </div>
+                    <div class="resposta-actions">
+                      <button type="submit" class="btn btn-primary">Salvar</button>
+                      <a href="{% url 'detalhes' pergunta.pk %}" class="btn btn-outline">Cancelar</a>
+                    </div>
+                  </form>
+                {% else %}
+                  <div class="resposta-body">{{ resposta.resposta }}</div>
+                  {% if resposta.pode_editar or resposta.pode_excluir %}
+                    <div class="resposta-actions">
+                      {% if resposta.pode_editar %}
+                        <form method="post">
+                          {% csrf_token %}
+                          <input type="hidden" name="acao" value="editar_resposta">
+                          <input type="hidden" name="resposta_id" value="{{ resposta.pk }}">
+                          <textarea name="resposta" hidden>{{ resposta.resposta }}</textarea>
+                          <button type="submit" class="btn btn-outline">Editar</button>
+                        </form>
+                      {% endif %}
+                      {% if resposta.pode_excluir %}
+                        <form method="post">
+                          {% csrf_token %}
+                          <input type="hidden" name="acao" value="excluir_resposta">
+                          <input type="hidden" name="resposta_id" value="{{ resposta.pk }}">
+                          <button type="submit" class="btn btn-danger" onclick="return confirm('Excluir esta resposta?')">Excluir</button>
+                        </form>
+                      {% endif %}
+                    </div>
+                  {% endif %}
+                {% endif %}
             </div>
         </div>
     {% endfor %}
@@ -581,7 +640,7 @@ form {
     <div class="no-answers">Ainda não há respostas. Seja o primeiro a responder!</div>
 {% endif %}
 
-{% if pergunta.status != 'fechada' %}
+{% if pergunta.status != 'fechada' and not editando_id %}
   <div class="add-resposta">
       <h2>Adicionar Resposta</h2>
       <form method="post">
