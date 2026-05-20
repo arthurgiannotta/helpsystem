@@ -581,15 +581,18 @@ form {
     <div class="no-answers">Ainda não há respostas. Seja o primeiro a responder!</div>
 {% endif %}
 
-<div class="add-resposta">
-    <h2>Adicionar Resposta</h2>
-    <form method="post">
-        {% csrf_token %}
-        <div class="form-group">
-            {{ form_resposta.resposta }}
-            {{ form_resposta.resposta.errors }}
-        </div>
-        <button type="submit" class="btn btn-primary">Enviar Resposta</button>
-    </form>
-</div>
+{% if pergunta.status != 'fechada' %}
+  <div class="add-resposta">
+      <h2>Adicionar Resposta</h2>
+      <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="acao" value="responder">
+          <div class="form-group">
+              {{ form_resposta.resposta }}
+              {{ form_resposta.resposta.errors }}
+          </div>
+          <button type="submit" class="btn btn-primary">Enviar Resposta</button>
+      </form>
+  </div>
+{% endif %}
 {% endblock %}

@@ -1,13 +1,21 @@
+from datetime import timedelta
+
 from django.http import HttpRequest
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 
-from .forms import FormCadastro, FormLogin, FormPergunta, FormResposta
+from .forms import FormCadastro, FormLogin, FormPergunta, FormReabrirPergunta, FormResposta
 from .models import Pergunta
 
+# Funções Auxiliares
+def dentro_do_prazo(objeto):
+    return timezone.now() <= objeto.criado_em + timedelta(days=1)
+
+# Views
 def autenticacao(request: HttpRequest):
     """Página de login e cadastro."""
 
@@ -53,17 +61,22 @@ def detalhes(request: HttpRequest, id: int):
     # Cria formulário de resposta
     form_resposta = FormResposta()
     if request.method == 'POST':
-        form_resposta = FormResposta(request.POST)
-        if form_resposta.is_valid():
-            resposta = form_resposta.save(commit=False)
-            resposta.autor = request.user
-            resposta.pergunta = pergunta
-            resposta.save()
-            if pergunta.status == 'aberta':
-                pergunta.status = 'respondida'
-                pergunta.save()
-            messages.success(request, 'Resposta enviada!')
-            return redirect('detalhes', id=id)
+        match request.POST.get('acao'):
+            case 'responder':
+                if pergunta.status == 'fechada':
+                    messages.error(request, 'Reabra a pergunta antes de responder.')
+                    return redirect('detalhes', id=id)
+                form_resposta = FormResposta(request.POST)
+                if form_resposta.is_valid():
+                    resposta = form_resposta.save(commit=False)
+                    resposta.autor = request.user
+                    resposta.pergunta = pergunta
+                    resposta.save()
+                    if pergunta.status == 'aberta':
+                        pergunta.status = 'respondida'
+                        pergunta.save(update_fields=['status'])
+                    messages.success(request, 'Resposta enviada!')
+                    return redirect('detalhes', id=id)
 
     # Renderiza página
     return render(request, 'detalhes.html', {
