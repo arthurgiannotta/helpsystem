@@ -156,6 +156,8 @@
         letter-spacing: 0.06em;
 
         user-select: none;
+        text-decoration: none;
+        cursor: pointer;
         }
 
         /* ── Links container ────────────────────────────────────── */
@@ -291,7 +293,7 @@
 <body>
     {% if user.is_authenticated %}
         <nav>
-            <div class="nav-logo">Colmeia</div>
+            <a href="/index.html" class="nav-logo">Colmeia</a>
             <div class="nav-links">
                 <a href="{% url 'listagem' %}">Perguntas</a>
                 <a href="{% url 'perguntar' %}">Nova Pergunta</a>
