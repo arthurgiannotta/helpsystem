@@ -28,12 +28,14 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'AdrianoGB.pythonanywhere.com',
     'adrianogb.pythonanywhere.com',
+    "appcolmeia.pythonanywhere.com",
     '127.0.0.1',
     'localhost'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://adrianogb.pythonanywhere.com',
+    "https://appcolmeia.pythonanywhere.com",
 ]
 
 # Application definition
