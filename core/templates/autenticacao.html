@@ -1,4 +1,6 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}Autenticação – Colmeia{% endblock %}
 
 {% block css %}
@@ -48,7 +50,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 8px;
 }
 
 /* ── Geometric accent strip (left edge) ─────────────────── */
@@ -70,40 +72,39 @@ body::before {
   z-index: 1;
 }
 
-/* ── Brand header ────────────────────────────────────────── */
-.container::before {
-  content: 'Colmeia';
-  display: block;
-
-  font-family: 'Playfair Display', serif;
-
-  font-size: 2.2rem;
-
-  font-weight: 700;
-
-  color: #ffd166;
-
-  letter-spacing: 0.08em;
-
-  text-align: center;
-
-  margin-bottom: 12px;
-
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+/* ── Brand logo ─────────────────────────────────────────── */
+.brand-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: -50px;
+  margin-bottom: 28px;
 }
 
-.container::after {
-  content: 'Central de suporte corporativo';
-  display: block;
-  font-size: .8125rem;
-  font-weight: 300;
-  color: var(--glaucous);
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  text-align: center;
-  margin-bottom: 32px;
-  margin-top: 12px;
+.brand-logo {
+  width: 320px;
+  max-width: 100%;
+  height: auto;
+
+  margin-bottom: -40px;
+
+  filter:
+    drop-shadow(0 8px 24px rgba(0,0,0,.35));
+
+  animation: logo-fade .6s cubic-bezier(.22,1,.36,1);
 }
+
+@keyframes logo-fade {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 
 /* ── Card ────────────────────────────────────────────────── */
 .card {
@@ -325,6 +326,15 @@ select {
 {% endblock %}
 
 {% block content %}
+
+<div class="brand-wrapper">
+    <img
+        src="{% static 'image/colmeia.png' %}"
+        alt="Colmeia"
+        class="brand-logo"
+    >
+</div>
+
 <div class="card">
     <div class="tab-bar">
         <button class="tab-btn {% if not form_cadastro.errors %}active{% endif %}" onclick="selectTab('login', this)">Entrar</button>

@@ -148,17 +148,36 @@
 
         /* ── Logo ───────────────────────────────────────────────── */
         .nav-logo {
-        font-family: 'Playfair Display', serif;
-        font-size: 1.4rem;
-        font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 700;
 
-        color: #ffbb7b; /* light caramel accent */
-        letter-spacing: 0.06em;
+            color: #ffbb7b;
 
-        user-select: none;
-        text-decoration: none;
-        cursor: pointer;
+            letter-spacing: 0.06em;
+
+            user-select: none;
+            text-decoration: none;
+            cursor: pointer;
         }
+
+        .nav-logo img {
+            width: 64px;
+            height: 64px;
+
+            object-fit: contain;
+
+            display: block;
+        }
+
+        .nav-logo span {
+            line-height: 1;
+            margin-left: -10px;
+        }        
 
         /* ── Links container ────────────────────────────────────── */
         .nav-links {
@@ -308,7 +327,10 @@
 <body>
     {% if user.is_authenticated %}
         <nav>
-            <a href="/index.html" class="nav-logo">Colmeia</a>
+            <a href="/index.html" class="nav-logo">
+                <img src="{% static 'image/logo.png' %}" alt="Logo Colmeia">
+                <span>olmeia</span>
+            </a>
             <div class="nav-links">
                 <a href="{% url 'listagem' %}">Perguntas</a>
                 <a href="{% url 'perguntar' %}">Nova Pergunta</a>
