@@ -2,6 +2,8 @@ from datetime import timedelta
 
 from django.http import HttpRequest
 from django.contrib import messages
+from django.shortcuts import redirect
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
@@ -12,6 +14,8 @@ from django.utils import timezone
 
 from .forms import FormAdminUsuario, FormCadastro, FormLogin, FormPerfil, FormPergunta, FormResposta, FormStaffToken
 from .models import Perfil, Pergunta, Resposta, StaffToken
+
+
 
 # Funções Auxiliares
 def administrador(usuario):
@@ -159,9 +163,21 @@ def autenticacao(request: HttpRequest):
 def detalhes(request: HttpRequest, id: int):
     """Detalhes sobre a pergunta (data/autor/...). Listagem e adição de respostas."""
 
-    # Obtém dados da pergunta
-    pergunta = get_object_or_404(Pergunta.objects.select_related('autor', 'autor__perfil'), pk=id)
+    try:
+        pergunta = Pergunta.objects.select_related(
+            'autor',
+            'autor__perfil'
+        ).get(pk=id)
+
+    except Pergunta.DoesNotExist:
+        messages.error(
+            request,
+            'A pergunta que você tentou acessar não existe mais.'
+        )
+        return redirect('listagem')
+
     respostas = pergunta.respostas.select_related('autor', 'autor__perfil')
+
     for resposta in respostas:
         modificavel = moderador(request.user) or pergunta.status != 'fechada'
         resposta.pode_editar = modificavel and pode_editar(resposta, request.user)
@@ -174,7 +190,19 @@ def detalhes(request: HttpRequest, id: int):
     if request.method == 'POST':
         match request.POST.get('acao'):
             case 'editar_resposta':
-                resposta = get_object_or_404(Resposta, pk=request.POST.get('resposta_id'), pergunta=pergunta)
+                try:
+                    resposta = Resposta.objects.get(
+                        pk=request.POST.get('resposta_id'),
+                        pergunta=pergunta
+                    )
+
+                except Resposta.DoesNotExist:
+                    messages.error(
+                        request,
+                        'A resposta não existe mais.'
+                    )
+                    return redirect('detalhes', id=pergunta.pk)
+                
                 if not moderador(request.user) and pergunta.status == 'fechada':
                     messages.error(request, 'A resposta não pode ser editada quando a pergunta está fechada.')
                 elif pode_editar(resposta, request.user):
