@@ -79,8 +79,8 @@ class FormCadastro(forms.ModelForm):
         user.set_password(self.cleaned_data['password'])
         if commit:
             staff_token = self.cleaned_data.get('staff_token')
-            if staff_token: StaffToken.consumir(staff_token, user)
             user.save()
+            if staff_token: StaffToken.consumir(staff_token, user)
             Perfil.objects.create(usuario=user, departamento=self.cleaned_data['departamento'])
 
         return user
@@ -165,8 +165,8 @@ class FormPerfil(forms.ModelForm):
         #if user.pk and user.email != self.initial.get('email'): user.is_active = False
         if commit:
             staff_token = self.cleaned_data.get('staff_token')
-            if staff_token: StaffToken.consumir(staff_token, user)
             user.save()
+            if staff_token: StaffToken.consumir(staff_token, user)
             Perfil.objects.update_or_create(usuario=user, defaults={ 'departamento': self.cleaned_data['departamento'] })
         return user
 
