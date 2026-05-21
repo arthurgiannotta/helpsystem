@@ -6,6 +6,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -282,6 +283,7 @@ def listagem(request: HttpRequest):
         perguntas = perguntas.filter(Q(titulo__icontains=search) | Q(autor__first_name__icontains=search))
     if status:
         perguntas = perguntas.filter(status=status)
+    perguntas = perguntas.annotate(movimentada_em=Coalesce('reaberta_em', 'criado_em')).order_by('-movimentada_em')
 
     # Renderiza página com as perguntas filtradas
     return render(request, 'listagem.html', {
