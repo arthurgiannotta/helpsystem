@@ -26,16 +26,16 @@ SECRET_KEY = 'django-insecure-jk1@wy@f2g-%i0d)x9a*k6nl+jvc7!17me$fu6e=8unxa$8ig6
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    'colmeia.pythonanywhere.com',
     'AdrianoGB.pythonanywhere.com',
     'adrianogb.pythonanywhere.com',
-    "appcolmeia.pythonanywhere.com",
     '127.0.0.1',
     'localhost'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
+    'https://colmeia.pythonanywhere.com',
     'https://adrianogb.pythonanywhere.com',
-    "https://appcolmeia.pythonanywhere.com",
 ]
 
 # Application definition
