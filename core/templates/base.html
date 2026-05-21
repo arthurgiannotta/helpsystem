@@ -286,6 +286,21 @@
             justify-content: center;
         }
         }
+
+        .nav-user {
+            text-decoration: none;
+        }
+
+        .admin-badge {
+            margin-left: 8px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: #ffbb7b;
+            color: #1e2540;
+            font-size: .68rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+        }
     </style>
     {% block css %}{% endblock %}
 </head>
@@ -297,12 +312,20 @@
             <div class="nav-links">
                 <a href="{% url 'listagem' %}">Perguntas</a>
                 <a href="{% url 'perguntar' %}">Nova Pergunta</a>
+                {% if user.is_staff or user.is_superuser %}
+                    <a href="{% url 'administracao' %}">Administração</a>
+                {% endif %}
             </div>
                 <div style="display:flex;align-items:center;gap:1rem">
-                <span class="nav-user">
+                <a href="{% url 'perfil' %}" class="nav-user">
                     <strong>{{ user.first_name }}</strong>
                     {% if user.perfil %}&nbsp;·&nbsp;{{ user.perfil.departamento|upper }}{% endif %}
-                </span>
+                    {% if user.is_superuser %}
+                        <span class="admin-badge">ADM</span>
+                    {% elif user.is_staff %}
+                        <span class="admin-badge">MOD</span>
+                    {% endif %}
+                </a>
                 <a href="{% url 'sair' %}" class="btn btn-outline btn-sm">Sair</a>
             </div>
         </nav>
