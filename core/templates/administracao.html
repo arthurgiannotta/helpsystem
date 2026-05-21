@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Administração – Colmeia{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Administração</h1>
+</div>
+
+{% for form_usuario in forms_usuarios %}
+    <div class="question-card">
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="acao" value="editar_usuario">
+            <input type="hidden" name="usuario" value="{{ form_usuario.usuario.pk }}">
+            <div class="form-group">
+                <label>Usuário</label>
+                <strong>{{ form_usuario.usuario.username }}</strong>
+            </div>
+            <div class="form-group">
+                <label>Apelido</label>
+                {{ form_usuario.form.first_name }}
+                {{ form_usuario.form.first_name.errors }}
+            </div>
+            <div class="form-group">
+                <label>Departamento</label>
+                {{ form_usuario.form.departamento }}
+                {{ form_usuario.form.departamento.errors }}
+            </div>
+            <button type="submit" class="btn btn-primary btn-salvar" hidden>Salvar</button>
+        </form>
+    </div>
+{% endfor %}
+
+<script>
+// Botão salvar aparece apenas quando campo é editado
+document.querySelectorAll('form').forEach((form) => {
+    const button = form.querySelector('.btn-salvar');
+    if (!button) return;
+    const initial = new FormData(form);
+    form.addEventListener('input', () => {
+        const current = new FormData(form);
+        let changed = false;
+        for (const [key, value] of current.entries()) {
+            if (value !== initial.get(key)) {
+                changed = true;
+                break;
+            }
+        }
+        button.hidden = !changed;
+    });
+    form.addEventListener('change', () => {
+        form.dispatchEvent(new Event('input'));
+    });
+});
+</script>
+{% endblock %}

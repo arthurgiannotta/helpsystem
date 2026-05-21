@@ -46,8 +46,21 @@ def administracao(request: HttpRequest):
     tokens = StaffToken.objects.select_related('criado_por', 'usado_por')
     usuarios = User.objects.select_related('perfil').order_by('first_name', 'username')
 
-    # Responde aos endpoints
+    # Cria formulários
     form_token = FormStaffToken(request.POST or None)
+    forms_usuarios = []
+    for usuario in usuarios:
+        if (request.method == 'POST' and request.POST.get('acao') == 'editar_usuario' and
+            request.POST.get('usuario_id') == str(usuario.pk)):
+            form = FormAdminUsuario(request.POST)
+        else:
+            form = FormAdminUsuario(initial={
+                'first_name': usuario.first_name,
+                'departamento': getattr(usuario.perfil, 'departamento', None),
+            })
+        forms_usuarios.append({ 'usuario': usuario, 'form': form })
+
+    # Responde aos endpoints
     novo_codigo = None
     if request.method == 'POST':
         match request.POST.get('acao'):
@@ -55,7 +68,7 @@ def administracao(request: HttpRequest):
                 _, novo_codigo = StaffToken.criar(criado_por=request.user, descricao=form_token.cleaned_data['descricao'])
                 messages.success(request, 'Token de moderador criado com sucesso.')
             case 'editar_usuario':
-                usuario = get_object_or_404(User, pk=request.POST.get('usuario_id'))
+                usuario = get_object_or_404(User, pk=request.POST.get('usuario'))
                 form = FormAdminUsuario(request.POST)
                 if form.is_valid():
                     usuario.first_name = form.cleaned_data['first_name']
@@ -78,9 +91,9 @@ def administracao(request: HttpRequest):
     # Renderiza página
     return render(request, 'administracao.html', {
         'form_token': form_token,
+        'forms_usuarios': forms_usuarios,
         'novo_codigo': novo_codigo,
         'tokens': tokens,
-        'usuarios': usuarios
     })
 
 def autenticacao(request: HttpRequest):
