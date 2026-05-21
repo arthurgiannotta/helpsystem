@@ -32,6 +32,9 @@ ALLOWED_HOSTS = [
     'localhost'
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://adrianogb.pythonanywhere.com',
+]
 
 # Application definition
 
