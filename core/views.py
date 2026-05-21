@@ -64,9 +64,33 @@ def administracao(request: HttpRequest):
     novo_codigo = None
     if request.method == 'POST':
         match request.POST.get('acao'):
+            case 'alternar_ativo_usuario':
+                usuario = get_object_or_404(User, pk=request.POST.get('usuario'))
+                if usuario.is_superuser:
+                    messages.error(request, 'Não é possível desativar um administrador.')
+                else:
+                    usuario.is_active = not usuario.is_active
+                    usuario.save(update_fields=['is_active'])
+                    if usuario.is_active:
+                        messages.success(request, 'Usuário reativado com sucesso.')
+                    else:
+                        messages.success(request, 'Usuário desativado com sucesso.')
+                return redirect('administracao')
             case 'criar_token':
-                _, novo_codigo = StaffToken.criar(criado_por=request.user, descricao=form_token.cleaned_data['descricao'])
-                messages.success(request, 'Token de moderador criado com sucesso.')
+                 if form_token.is_valid():
+                    _, novo_codigo = StaffToken.criar(criado_por=request.user, descricao=form_token.cleaned_data['descricao'])
+                    messages.success(request, 'Token de moderador criado com sucesso.')
+            case 'desmoderar_usuario':
+                usuario = get_object_or_404(User, pk=request.POST.get('usuario'))
+                if usuario.is_superuser:
+                    messages.error(request, 'Não é possível desmoderar um administrador.')
+                elif not usuario.is_staff:
+                    messages.error(request, 'Este usuário não é moderador.')
+                else:
+                    usuario.is_staff = False
+                    usuario.save(update_fields=['is_staff'])
+                    messages.success(request, 'Usuário não é mais um moderador.')
+                return redirect('administracao')
             case 'editar_usuario':
                 usuario = get_object_or_404(User, pk=request.POST.get('usuario'))
                 form = FormAdminUsuario(request.POST)

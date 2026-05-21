@@ -1,6 +1,542 @@
 {% extends 'base.html' %}
 {% block title %}Administração – Colmeia{% endblock %}
 
+{% block css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --light-caramel : #ffbb7b;
+  --ochre         : #c6782f;
+  --glaucous      : #7f8ac2;
+  --indigo        : #2e3760;
+  --indigo-deep   : #1e2540;
+  --muted-olive   : #a9bf75;
+  --fern          : #697e3a;
+
+  --surface       : #ffffff;
+  --surface-soft  : #f5f6fa;
+  --text-primary  : #1a1e30;
+  --text-muted    : #6b7280;
+  --border        : #dde0ec;
+  --danger        : #c0392b;
+
+  --radius-card   : 14px;
+  --radius-panel  : 18px;
+  --radius-input  : 9px;
+  --shadow-card   : 0 4px 18px rgba(46, 55, 96, .08);
+  --shadow-panel  : 0 24px 64px rgba(46, 55, 96, .12),
+                    0  4px 16px rgba(46, 55, 96, .06);
+  --transition    : 200ms cubic-bezier(.4, 0, .2, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--surface-soft);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.page-header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.9rem;
+  font-weight: 600;
+  color: var(--indigo);
+  letter-spacing: -.02em;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.page-header h1::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 200px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--ochre), var(--light-caramel));
+  border-radius: 2px;
+}
+
+.form-card {
+  background: var(--surface);
+  border: 1px solid rgba(221, 224, 236, .9);
+  border-radius: var(--radius-panel);
+  padding: 30px;
+  margin: 34px 0 24px;
+  box-shadow: var(--shadow-panel);
+  position: relative;
+  overflow: hidden;
+}
+
+.form-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 5px;
+  background: linear-gradient(90deg, var(--light-caramel), var(--ochre), var(--glaucous));
+}
+
+.form-card h2,
+.question-card h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.45rem;
+  font-weight: 600;
+  color: var(--indigo);
+  margin-bottom: 18px;
+}
+
+.form-card form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: end;
+}
+
+.question-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.question-list .question-card {
+  margin-bottom: 0;
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
+.token-auditoria {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+  margin-bottom: 0;
+}
+
+.token-separador {
+  color: var(--ochre);
+  font-weight: 700;
+  margin: 0 4px;
+}
+
+.btn-copy-token {
+  margin-top: 14px;
+  width: auto;
+}
+
+.question-card {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 22px 24px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform var(--transition),
+    box-shadow var(--transition),
+    border-color var(--transition);
+}
+
+.question-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--light-caramel), var(--ochre), var(--glaucous));
+  opacity: .9;
+}
+
+.question-card:hover {
+  transform: translateY(-2px);
+  border-color: #c0c5e0;
+  box-shadow: 0 10px 28px rgba(46, 55, 96, .12);
+}
+
+.question-card {
+  transition:
+    transform var(--transition),
+    box-shadow var(--transition),
+    border-color var(--transition),
+    padding var(--transition);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: .74rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.form-group strong {
+  min-height: 47px;
+  display: flex;
+  align-items: center;
+  color: var(--indigo);
+  font-size: .96rem;
+  font-weight: 600;
+  padding: 0 2px;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  height: 47px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-input);
+  padding: 12px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .94rem;
+  color: var(--text-primary);
+  background-color: var(--surface);
+  outline: none;
+  transition:
+    border-color var(--transition),
+    box-shadow var(--transition),
+    transform var(--transition);
+}
+
+.form-group select {
+  appearance: none;
+  cursor: pointer;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237f8ac2' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--glaucous);
+  box-shadow: 0 0 0 3px rgba(127, 138, 194, .18);
+  transform: translateY(-1px);
+}
+
+.errorlist {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0;
+}
+
+.errorlist,
+.errorlist li {
+  color: var(--danger);
+  font-size: .8rem;
+}
+
+.question-card p {
+  color: var(--text-muted);
+  font-size: .92rem;
+  line-height: 1.6;
+  margin: 8px 0;
+}
+
+.question-card strong {
+  color: var(--indigo);
+  font-weight: 600;
+}
+
+.question-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  color: var(--text-muted);
+  font-size: .8rem;
+}
+
+.question-meta span:first-child {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #eef0f7;
+  color: var(--indigo);
+  font-weight: 600;
+  letter-spacing: .03em;
+}
+
+.staff-token-code {
+  display: block;
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--indigo-deep);
+  color: #fff;
+  border: 1px solid rgba(255, 187, 123, .35);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: .92rem;
+  line-height: 1.6;
+  word-break: break-all;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .04);
+}
+
+.btn {
+  height: 47px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  border-radius: var(--radius-input);
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .9rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    transform var(--transition),
+    filter var(--transition),
+    box-shadow var(--transition),
+    background var(--transition),
+    border-color var(--transition),
+    color var(--transition),
+    opacity var(--transition);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--indigo) 0%, #3d4d80 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(46, 55, 96, .28);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 7px 22px rgba(46, 55, 96, .36);
+}
+
+.btn-outline {
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--indigo);
+}
+
+.btn-outline:hover {
+  border-color: var(--glaucous);
+  background: #f0f2fa;
+}
+
+.btn:active {
+  transform: scale(.98);
+}
+
+.btn[hidden] {
+  display: none;
+}
+
+.btn-salvar {
+  min-width: 96px;
+  animation: salvar-entrada .18s ease-out both;
+}
+
+@keyframes salvar-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.question-card form[action] {
+  margin-top: 14px;
+}
+
+.question-card form[action] .btn {
+  width: auto;
+}
+
+@media (max-width: 900px) {
+  .question-card > form {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .question-card > form .btn-salvar {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
+
+@media (max-width: 680px) {
+  .container {
+    padding: 32px 16px 48px;
+  }
+
+  .page-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .form-card {
+    padding: 28px 22px;
+  }
+
+  .form-card form,
+  .question-card > form {
+    grid-template-columns: 1fr;
+  }
+
+  .question-card {
+    padding: 22px 18px;
+  }
+
+  .question-meta {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .btn,
+  .question-card form[action] .btn {
+    width: 100%;
+  }
+}
+
+.btn-copy-token {
+  margin-top: 14px;
+}
+
+.form-usuario {
+  display: grid;
+  grid-template-columns: minmax(170px, 1.1fr) minmax(180px, 1fr) minmax(180px, 1fr);
+  gap: 16px;
+  align-items: end;
+}
+
+.card-actions-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(221, 224, 236, .75);
+}
+
+.user-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0;
+  padding: 0;
+}
+
+.user-actions .btn,
+.card-actions-row .btn {
+  min-width: 128px;
+}
+
+.btn-salvar {
+  animation: salvar-entrada .18s ease-out both;
+}
+
+.btn[hidden] {
+  display: none;
+}
+
+.user-actions .btn {
+  min-width: 128px;
+}
+
+.btn-warning {
+  border: 1.5px solid rgba(198, 120, 47, .45);
+  background: rgba(255, 187, 123, .18);
+  color: var(--ochre);
+}
+
+.btn-warning:hover {
+  background: rgba(255, 187, 123, .28);
+  border-color: var(--ochre);
+}
+
+.btn-danger {
+  border: 1.5px solid rgba(192, 57, 43, .42);
+  background: rgba(192, 57, 43, .08);
+  color: #a93226;
+}
+
+.btn-danger:hover {
+  background: rgba(192, 57, 43, .14);
+  border-color: #c0392b;
+}
+
+.btn-success {
+  border: 1.5px solid rgba(105, 126, 58, .42);
+  background: rgba(169, 191, 117, .16);
+  color: var(--fern);
+}
+
+.btn-success:hover {
+  background: rgba(169, 191, 117, .26);
+  border-color: var(--fern);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 10px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.status-staff {
+  background: rgba(255, 187, 123, .22);
+  color: var(--ochre);
+}
+
+.status-inativo {
+  background: rgba(192, 57, 43, .1);
+  color: #a93226;
+}
+
+@media (max-width: 680px) {
+  .user-actions {
+    justify-content: stretch;
+  }
+
+  .user-actions .btn {
+    width: 100%;
+  }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <h1>Administração</h1>
@@ -8,13 +544,23 @@
 
 {% for form_usuario in forms_usuarios %}
     <div class="question-card">
-        <form method="post">
+        <form method="post" id="form-usuario-{{ form_usuario.usuario.pk }}" class="form-usuario">
             {% csrf_token %}
             <input type="hidden" name="acao" value="editar_usuario">
             <input type="hidden" name="usuario" value="{{ form_usuario.usuario.pk }}">
             <div class="form-group">
                 <label>Usuário</label>
-                <strong>{{ form_usuario.usuario.username }}</strong>
+                <strong>
+                    {{ form_usuario.usuario.username }}
+
+                    {% if not form_usuario.usuario.is_active %}
+                        <span class="status-badge status-inativo">Inativo</span>
+                    {% elif form_usuario.usuario.is_superuser %}
+                        <span class="status-badge status-staff">Administrador</span>
+                    {% elif form_usuario.usuario.is_staff %}
+                        <span class="status-badge status-staff">Moderador</span>
+                    {% endif %}
+                </strong>
             </div>
             <div class="form-group">
                 <label>Apelido</label>
@@ -26,20 +572,125 @@
                 {{ form_usuario.form.departamento }}
                 {{ form_usuario.form.departamento.errors }}
             </div>
-            <button type="submit" class="btn btn-primary btn-salvar" hidden>Salvar</button>
         </form>
+        <div class="card-actions-row">
+            {% if form_usuario.usuario != user and not form_usuario.usuario.is_superuser %}
+                <form method="post" class="user-actions">
+                    {% csrf_token %}
+                    <input type="hidden" name="usuario" value="{{ form_usuario.usuario.pk }}">
+
+                    {% if form_usuario.usuario.is_active and form_usuario.usuario.is_staff %}
+                        <button type="submit" name="acao" value="desmoderar_usuario" class="btn btn-warning">
+                            Desmoderar
+                        </button>
+                    {% elif form_usuario.usuario.is_active %}
+                        <button type="submit" name="acao" value="alternar_ativo_usuario" class="btn btn-danger">
+                            Desativar
+                        </button>
+                    {% else %}
+                        <button type="submit" name="acao" value="alternar_ativo_usuario" class="btn btn-success">
+                            Reativar
+                        </button>
+                    {% endif %}
+                </form>
+            {% endif %}
+            <button
+                type="submit" class="btn btn-primary btn-salvar"
+                form="form-usuario-{{ form_usuario.usuario.pk }}"
+                data-form="form-usuario-{{ form_usuario.usuario.pk }}"
+                hidden
+            >Salvar</button>
+        </div>
     </div>
 {% endfor %}
 
+<div class="form-card">
+    <h2>Criar Token</h2>
+    <form method="post" action="{% url 'administracao' %}">
+        {% csrf_token %}
+        <input type="hidden" name="acao" value="criar_token">
+
+        <div class="form-group">
+            <label>Descrição</label>
+            {{ form_token.descricao }}
+            {{ form_token.descricao.errors }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Criar Token</button>
+    </form>
+</div>
+
+{% if novo_codigo %}
+    <div class="question-card token-alert" id="novo-token" tabindex="-1">
+        <h2>Copie este token agora!</h2>
+        <p>Ele não será exibido novamente.</p>
+        <code class="staff-token-code" id="staff-token-code">{{ novo_codigo }}</code>
+        <button type="button" class="btn btn-primary btn-copy-token" id="btn-copy-token">
+            Copiar
+        </button>
+    </div>
+{% endif %}
+
+<div class="question-list">
+    {% for token in tokens %}
+        <div class="question-card">
+            <div class="question-meta">
+                <span>{{ token.prefixo }}...</span>
+                <span>{{ token.criado_em|date:"d/m/Y H:i" }}</span>
+            </div>
+            {% if token.descricao %}
+                <p>{{ token.descricao }}</p>
+            {% endif %}
+            <p class="token-auditoria">
+                Criado por
+                <strong>
+                    {% if token.criado_por %}
+                        {{ token.criado_por.first_name }}
+                    {% else %}
+                        Usuário removido
+                    {% endif %}
+                </strong>
+
+                {% if token.usado_em %}
+                    <span class="token-separador">·</span>
+                    Usado por
+                    <strong>
+                        {% if token.usado_por %}
+                            {{ token.usado_por.first_name }}
+                        {% else %}
+                            Usuário removido
+                        {% endif %}
+                    </strong>
+                    em {{ token.usado_em|date:"d/m/Y H:i" }}
+                {% endif %}
+            </p>
+
+            {% if not token.usado_em and token.ativo %}
+                <form method="post" action="{% url 'administracao' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="acao" value="revogar_token">
+                    <input type="hidden" name="token_id" value="{{ token.pk }}">
+                    <button type="submit" class="btn btn-outline">Revogar</button>
+                </form>
+            {% else %}
+                <p><strong>Revogado</strong></p>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p>Nenhum token criado ainda.</p>
+    {% endfor %}
+</div>
+
 <script>
 // Botão salvar aparece apenas quando campo é editado
-document.querySelectorAll('form').forEach((form) => {
-    const button = form.querySelector('.btn-salvar');
+document.querySelectorAll('.form-usuario').forEach((form) => {
+    const button = document.querySelector(`.btn-salvar[data-form="${form.id}"]`);
     if (!button) return;
     const initial = new FormData(form);
-    form.addEventListener('input', () => {
+    const checkChanges = () => {
         const current = new FormData(form);
         let changed = false;
+
         for (const [key, value] of current.entries()) {
             if (value !== initial.get(key)) {
                 changed = true;
@@ -47,9 +698,42 @@ document.querySelectorAll('form').forEach((form) => {
             }
         }
         button.hidden = !changed;
-    });
-    form.addEventListener('change', () => {
-        form.dispatchEvent(new Event('input'));
+    };
+    form.addEventListener('input', checkChanges);
+    form.addEventListener('change', checkChanges);
+});
+
+// Foca no novo token gerado
+document.addEventListener('DOMContentLoaded', () => {
+    const tokenBox = document.getElementById('novo-token');
+    const tokenCode = document.getElementById('staff-token-code');
+    const copyButton = document.getElementById('btn-copy-token');
+    if (tokenBox) {
+        tokenBox.focus({ preventScroll: true });
+        tokenBox.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
+    }
+    if (!tokenCode || !copyButton) return;
+    copyButton.addEventListener('click', async () => {
+        const token = tokenCode.textContent.trim();
+        try {
+            await navigator.clipboard.writeText(token);
+            copyButton.textContent = 'Token Copiado';
+            copyButton.disabled = true;
+            setTimeout(() => {
+                copyButton.textContent = 'Copiar';
+                copyButton.disabled = false;
+            }, 1800);
+        } catch {
+            const range = document.createRange();
+            range.selectNodeContents(tokenCode);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            copyButton.textContent = 'Selecione e copie';
+        }
     });
 });
 </script>
