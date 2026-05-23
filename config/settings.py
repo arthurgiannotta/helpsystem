@@ -26,12 +26,17 @@ SECRET_KEY = 'django-insecure-jk1@wy@f2g-%i0d)x9a*k6nl+jvc7!17me$fu6e=8unxa$8ig6
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    'colmeia.pythonanywhere.com',
     'AdrianoGB.pythonanywhere.com',
     'adrianogb.pythonanywhere.com',
     '127.0.0.1',
     'localhost'
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://colmeia.pythonanywhere.com',
+    'https://adrianogb.pythonanywhere.com',
+]
 
 # Application definition
 
@@ -120,7 +125,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
+import os
+
 STATIC_URL = 'static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

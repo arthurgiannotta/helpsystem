@@ -17,6 +17,19 @@
     >
 
     <style>
+
+        :root {
+            --font-base: 1.5rem;
+            --font-small: 1.0rem;
+            --font-navbar: 1.5rem;
+            --font-title: 3.5rem;
+            --font-logo: 2rem;
+        }
+
+        body {
+            font-size: var(--font-base);
+         }
+
         /* ── Django Messages – Toast style ──────────────────────── */
         .container {
         padding-top: 32px;
@@ -42,7 +55,7 @@
         .messages li {
         padding: 13px 16px;
         border-radius: 10px;
-        font-size: .875rem;
+        font-size: var(--font-navbar);
         font-weight: 400;
         display: flex;
         align-items: center;
@@ -153,7 +166,7 @@
             gap: 2px;
             
             font-family: 'Playfair Display', serif;
-            font-size: 1.4rem;
+            font-size: var(--font-logo);
             font-weight: 700;
 
             color: #ffbb7b;
@@ -193,7 +206,7 @@
         text-decoration: none;
 
         font-family: 'DM Sans', sans-serif;
-        font-size: .92rem;
+        font-size: var(--font-navbar);
         font-weight: 500;
 
         color: #dde0ec;
@@ -239,7 +252,7 @@
         /* ── User info ──────────────────────────────────────────── */
         .nav-user {
         font-family: 'DM Sans', sans-serif;
-        font-size: .85rem;
+        font-size: var(--font-small);
 
         color: #a9bf75; /* muted olive accent */
 
@@ -264,14 +277,14 @@
         /* ── Buttons override (nav context) ─────────────────────── */
         nav .btn {
         padding: 8px 14px;
-        font-size: .85rem;
+        font-size: var(--font-small);
         border-radius: 10px;
         }
 
         /* small outline button consistency */
         .btn-sm {
         padding: 8px 14px;
-        font-size: .82rem;
+        font-size: font-size: var(--font-small);
         }
 
         /* ensure logout stands out slightly */
@@ -316,7 +329,7 @@
             border-radius: 999px;
             background: #ffbb7b;
             color: #1e2540;
-            font-size: .68rem;
+            font-size: var(--font-small);
             font-weight: 700;
             letter-spacing: .08em;
         }
