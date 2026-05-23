@@ -39,7 +39,7 @@ def pode_fechar(objeto, usuario):
 
 # Views
 @login_required(login_url='autenticacao')
-@user_passes_test(administrador, login_url='listagem')
+@user_passes_test(administrador, login_url='listagem', redirect_field_name='')
 def administracao(request: HttpRequest):
     """Página de administração de usuários."""
 
